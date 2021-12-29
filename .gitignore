@@ -1,0 +1,4 @@
+/backend/build/
+/backend/.gradle/
+/.idea/
+.DS_Store
