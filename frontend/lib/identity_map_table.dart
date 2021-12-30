@@ -115,7 +115,7 @@ class IdentityMapTableState extends State<IdentityMapTable> {
             child: Container(
               padding: const EdgeInsets.all(16.0),
               constraints: const BoxConstraints(
-                  minHeight: 300, minWidth: 600, maxHeight: 300, maxWidth: 600),
+                  minHeight: 180, minWidth: 500, maxHeight: 180, maxWidth: 500),
               child: Column(
                 children: [
                   const Text(

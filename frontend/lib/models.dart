@@ -88,6 +88,7 @@ class IdentityMapHistory {
   int oldIdentityId;
   int newIdentityId;
   String createdBy;
+  String event;
 
   IdentityMapHistory({
     required this.id,
@@ -96,6 +97,7 @@ class IdentityMapHistory {
     required this.oldIdentityId,
     required this.newIdentityId,
     required this.createdBy,
+    required this.event,
   });
 
   factory IdentityMapHistory.fromJson(Map<String, dynamic> json) {
@@ -106,6 +108,7 @@ class IdentityMapHistory {
       oldIdentityId: json['oldIdentityId'] as int,
       newIdentityId: json['newIdentityId'] as int,
       createdBy: json['createdBy'] as String,
+      event: json['event'] as String,
     );
   }
 }

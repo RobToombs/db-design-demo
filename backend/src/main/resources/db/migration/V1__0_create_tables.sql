@@ -28,7 +28,8 @@ create table identity_map_history (
       identity_map_id   BIGINT NOT NULL,
       old_identity_id   BIGINT NOT NULL,
       new_identity_id   BIGINT NOT NULL,
-      created_by        TEXT NOT NULL DEFAULT ''
+      created_by        TEXT NOT NULL DEFAULT '',
+      event             TEXT NOT NULL DEFAULT ''
 );
 
 create table appointment (
@@ -50,6 +51,8 @@ create table refill (
      FOREIGN KEY(identity_map_id) REFERENCES identity_map(id)
 );
 
+-- WHILE THIS WORKS PROPERLY WHEN MAKING MANUAL DB UPDATES, I'M HAVING TROUBLE
+-- GETTING IT TO WORK WITH SPRING/HIBERNATE
 --
 -- CREATE OR REPLACE FUNCTION process_identity_map_history()
 -- RETURNS TRIGGER

@@ -17,6 +17,9 @@ class IdentityService(
     var entityManager: EntityManager? = null
 
     private val USER = "rtoombs@shieldsrx.com"
+    private val MERGE = "MERGE"
+    private val UPDATE = "UPDATE"
+    private val CREATE = "CREATE"
 
     fun getIdentities(): List<Identity> {
         return identityRepository.findAllByOrderByIdAsc()
@@ -83,7 +86,7 @@ class IdentityService(
         val newIdentity = identityRepository.findById(newIdentityId).get()
         val identityMap = identityMapRepository.findById(id).get()
 
-        createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, newIdentity.id, LocalDateTime.now())
+        createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, newIdentity.id, LocalDateTime.now(), MERGE)
 
         identityMap.identity = newIdentity
 
@@ -120,7 +123,7 @@ class IdentityService(
         val identityMaps = identityMapRepository.findAllByIdentityId(previousId)
 
         for(identityMap in identityMaps) {
-            createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, activeIdentity.id, eventTime)
+            createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, activeIdentity.id, eventTime, UPDATE)
 
             identityMap.identity = activeIdentity
         }
@@ -128,13 +131,14 @@ class IdentityService(
         saveAll(identityMaps)
     }
 
-    private fun createIdentityMapHistoryEntry(identityMapId: Long?, oldIdentityId: Long?, newIdentityId: Long?, eventTime: LocalDateTime?) {
+    private fun createIdentityMapHistoryEntry(identityMapId: Long?, oldIdentityId: Long?, newIdentityId: Long?, eventTime: LocalDateTime?, event: String) {
         val history = IdentityMapHistory()
         history.identityMapId = identityMapId
         history.oldIdentityId = oldIdentityId
         history.newIdentityId = newIdentityId
         history.createDate = eventTime
         history.createdBy = USER
+        history.event = event
 
         save(history)
     }

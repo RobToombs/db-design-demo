@@ -52,7 +52,8 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
         createCell(identityMapHistory.identityMapId.toString()),
         createCell(identityMapHistory.oldIdentityId.toString()),
         createCell(identityMapHistory.newIdentityId.toString()),
-        createCell(identityMapHistory.createdBy.toString()),
+        createCell(identityMapHistory.createdBy),
+        createCell(identityMapHistory.event),
       ]);
     }).toList();
 
@@ -68,6 +69,7 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
         3: FixedColumnWidth(120),
         4: FixedColumnWidth(120),
         5: FixedColumnWidth(200),
+        6: FixedColumnWidth(120),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
@@ -83,6 +85,7 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
         createHeader("Old Identity Id"),
         createHeader("New Identity Id"),
         createHeader("Created By"),
+        createHeader("Event"),
       ],
     );
   }
