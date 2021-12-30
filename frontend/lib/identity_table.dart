@@ -9,13 +9,15 @@ import 'helpers.dart';
 import 'models.dart';
 
 class IdentityTable extends StatefulWidget {
-  const IdentityTable({Key? key}) : super(key: key);
+  final VoidCallback refreshIdentity;
+  const IdentityTable({Key? key, required this.refreshIdentity})
+      : super(key: key);
 
   @override
-  _IdentityTableState createState() => _IdentityTableState();
+  IdentityTableState createState() => IdentityTableState();
 }
 
-class _IdentityTableState extends State<IdentityTable> {
+class IdentityTableState extends State<IdentityTable> {
   late Future<List<Identity>> _futureIdentities;
 
   @override
@@ -239,9 +241,7 @@ class _IdentityTableState extends State<IdentityTable> {
                                   identity.dateOfBirth = updatedDob;
                                   _updateIdentity(identity).then((updated) {
                                     Navigator.pop(context);
-                                    setState(() {
-                                      _futureIdentities = _fetchIdentities();
-                                    });
+                                    widget.refreshIdentity();
                                   });
                                 },
                               ),
@@ -257,7 +257,13 @@ class _IdentityTableState extends State<IdentityTable> {
   @override
   void initState() {
     super.initState();
-    _futureIdentities = _fetchIdentities();
+    updateIdentities();
+  }
+
+  void updateIdentities() {
+    setState(() {
+      _futureIdentities = _fetchIdentities();
+    });
   }
 
   Future<List<Identity>> _fetchIdentities() async {

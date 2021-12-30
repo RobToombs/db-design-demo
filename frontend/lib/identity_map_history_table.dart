@@ -11,11 +11,10 @@ class IdentityMapHistoryTable extends StatefulWidget {
   const IdentityMapHistoryTable({Key? key}) : super(key: key);
 
   @override
-  _IdentityMapHistoryTableState createState() =>
-      _IdentityMapHistoryTableState();
+  IdentityMapHistoryTableState createState() => IdentityMapHistoryTableState();
 }
 
-class _IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
+class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
   late Future<List<IdentityMapHistory>> _futureIdentityMapHistories;
 
   @override
@@ -91,7 +90,13 @@ class _IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
   @override
   void initState() {
     super.initState();
-    _futureIdentityMapHistories = _fetchIdentityMapHistories();
+    updateIdentityMapHistories();
+  }
+
+  void updateIdentityMapHistories() {
+    setState(() {
+      _futureIdentityMapHistories = _fetchIdentityMapHistories();
+    });
   }
 
   Future<List<IdentityMapHistory>> _fetchIdentityMapHistories() async {

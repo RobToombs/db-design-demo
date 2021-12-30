@@ -54,10 +54,10 @@ class _PatientCentricPageState extends State<PatientCentricPage> {
             ),
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
-            AppointmentContent(),
-            RefillContent(),
+            const AppointmentContent(),
+            const RefillContent(),
             IdentityContent(),
           ],
         ),

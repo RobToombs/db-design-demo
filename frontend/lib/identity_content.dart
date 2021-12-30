@@ -5,18 +5,29 @@ import 'identity_map_table.dart';
 import 'identity_table.dart';
 
 class IdentityContent extends StatelessWidget {
-  const IdentityContent({Key? key}) : super(key: key);
+  IdentityContent({Key? key}) : super(key: key);
+
+  final GlobalKey<IdentityTableState> _identityTable = GlobalKey();
+  final GlobalKey<IdentityMapTableState> _identityMapTable = GlobalKey();
+  final GlobalKey<IdentityMapHistoryTableState> _identityMapHistoryTable =
+      GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        children: const [
-          IdentityTable(),
-          IdentityMapTable(),
-          IdentityMapHistoryTable(),
+        children: [
+          IdentityTable(key: _identityTable, refreshIdentity: refresh),
+          IdentityMapTable(key: _identityMapTable, refreshIdentity: refresh),
+          IdentityMapHistoryTable(key: _identityMapHistoryTable),
         ],
       ),
     );
+  }
+
+  refresh() {
+    _identityTable.currentState?.updateIdentities();
+    _identityMapTable.currentState?.updateIdentityMaps();
+    _identityMapHistoryTable.currentState?.updateIdentityMapHistories();
   }
 }

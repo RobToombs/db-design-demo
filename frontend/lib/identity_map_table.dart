@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:html';
+import 'dart:html' as http;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,13 +9,15 @@ import 'helpers.dart';
 import 'models.dart';
 
 class IdentityMapTable extends StatefulWidget {
-  const IdentityMapTable({Key? key}) : super(key: key);
+  final VoidCallback refreshIdentity;
+  const IdentityMapTable({Key? key, required this.refreshIdentity})
+      : super(key: key);
 
   @override
-  _IdentityMapTableState createState() => _IdentityMapTableState();
+  IdentityMapTableState createState() => IdentityMapTableState();
 }
 
-class _IdentityMapTableState extends State<IdentityMapTable> {
+class IdentityMapTableState extends State<IdentityMapTable> {
   late Future<List<IdentityMap>> _futureIdentityMaps;
 
   @override
@@ -163,10 +165,7 @@ class _IdentityMapTableState extends State<IdentityMapTable> {
                                   _updateIdentityMap(identityMap, newIdentityId)
                                       .then((updated) {
                                     Navigator.pop(context);
-                                    setState(() {
-                                      _futureIdentityMaps =
-                                          _fetchIdentityMaps();
-                                    });
+                                    widget.refreshIdentity();
                                   });
                                 },
                               ),
@@ -182,14 +181,20 @@ class _IdentityMapTableState extends State<IdentityMapTable> {
   @override
   void initState() {
     super.initState();
-    _futureIdentityMaps = _fetchIdentityMaps();
+    updateIdentityMaps();
+  }
+
+  void updateIdentityMaps() {
+    setState(() {
+      _futureIdentityMaps = _fetchIdentityMaps();
+    });
   }
 
   Future<List<IdentityMap>> _fetchIdentityMaps() async {
     http.Response response =
         await http.get(Uri.http('localhost:8080', 'api/identity-maps'));
 
-    if (response.statusCode == HttpStatus.ok) {
+    if (response.statusCode == http.HttpStatus.ok) {
       return (jsonDecode(response.body) as List)
           .map((identityMap) => IdentityMap.fromJson(identityMap))
           .toList();
@@ -209,7 +214,7 @@ class _IdentityMapTableState extends State<IdentityMapTable> {
           json.encode(newIdentityId),
         ));
 
-    if (response.statusCode == HttpStatus.created) {
+    if (response.statusCode == http.HttpStatus.created) {
       return true;
     } else {
       throw Exception('Failed to update identity');
