@@ -25,11 +25,6 @@ class AppointmentTable extends StatefulWidget {
 
 class _AppointmentTableState extends State<AppointmentTable> {
   late Future<List<Appointment>> _futureAppointments;
-  late Future<List<Identity>> _futureActiveIdentities;
-
-  DateTime? _date;
-  String _medication = "";
-  Identity? _selectedIdentity;
 
   @override
   Widget build(BuildContext context) {
@@ -80,9 +75,6 @@ class _AppointmentTableState extends State<AppointmentTable> {
       body: table,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            _futureActiveIdentities = _fetchActiveIdentities();
-          });
           _showAddModal(context);
         },
         child: const Icon(Icons.add),
@@ -115,149 +107,10 @@ class _AppointmentTableState extends State<AppointmentTable> {
   }
 
   void _showAddModal(context) {
-    String idMrn = "";
-    String idLast = "";
-    String idFirst = "";
-    DateTime idDob = DateTime.now();
-    String idGender = "";
-
-    Widget _createIdentityList(List<Identity> identities) {
-      ListView identityList = ListView.builder(
-        itemCount: identities.length,
-        itemBuilder: (context, index) {
-          Identity identity = identities[index];
-
-          Row title = Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [Text(identity.patientLast + ", " + identity.patientFirst)]);
-          Row subtitle = Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [Text("Gender: " + identity.gender), Text("DOB: " + formatDate(identity.dateOfBirth)), Text("MRN: " + identity.mrn)]);
-
-          return Card(
-              child: ListTile(
-                  title: title,
-                  subtitle: subtitle,
-                  onTap: () {
-                    setState(() {
-                      _selectedIdentity = identity;
-                    });
-                  }));
-        },
-      );
-
-      return SizedBox(height: 230, width: 600, child: identityList);
-    }
-
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              constraints: const BoxConstraints(minHeight: 500, minWidth: 600, maxHeight: 500, maxWidth: 600),
-              child: Column(
-                children: [
-                  const Text(
-                    "Add Appointment",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  Container(
-                      margin: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-                      child: Text(
-                        "Active Identities " + _medication,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                      )),
-                  FutureBuilder<List<Identity>>(
-                      future: _futureActiveIdentities,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return _createIdentityList(snapshot.data!);
-                        } else if (snapshot.hasError) {
-                          return Text("${snapshot.error}");
-                        } else {
-                          return circularProgressIndicatorWidget();
-                        }
-                      }),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      filled: false,
-                      labelText: 'Medication:',
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _medication = value;
-                      });
-                    },
-                  ),
-                  InputDatePickerFormField(
-                    fieldLabelText: 'Date:',
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2200),
-                    onDateSubmitted: (value) {
-                      setState(() {
-                        _date = value;
-                      });
-                    },
-                  ),
-                  Container(
-                      margin: const EdgeInsets.only(top: 40.0),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                        TextButton(
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: ElevatedButton(
-                            child: const Text(
-                              'Save',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            onPressed: () {
-                              Identity ident = _selectedIdentity ??
-                                  Identity(
-                                      id: null,
-                                      upi: "",
-                                      mrn: idMrn,
-                                      patientLast: idLast,
-                                      patientFirst: idFirst,
-                                      dateOfBirth: idDob,
-                                      gender: idGender,
-                                      active: true,
-                                      createDate: null,
-                                      endDate: null,
-                                      createdBy: "",
-                                      modifiedBy: "");
-
-                              IdentityMap identMap = IdentityMap(id: null, identity: ident);
-
-                              Appointment appt = Appointment(
-                                id: null,
-                                identityMap: identMap,
-                                date: _date!,
-                                medication: _medication,
-                              );
-
-                              _addAppointment(appt).then((updated) {
-                                Navigator.pop(context);
-                                setState(() {
-                                  _futureAppointments = _fetchAppointments();
-                                });
-                              });
-                            },
-                          ),
-                        ),
-                      ])),
-                ],
-              ),
-            ),
-          );
+          return Dialog(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), child: AddAppointmentDialogContent());
         });
   }
 
@@ -269,6 +122,172 @@ class _AppointmentTableState extends State<AppointmentTable> {
     } else {
       throw Exception('Failed to load appointments');
     }
+  }
+}
+
+class AddAppointmentDialogContent extends StatefulWidget {
+  const AddAppointmentDialogContent({Key? key}) : super(key: key);
+
+  @override
+  _AddAppointmentDialogContentState createState() => _AddAppointmentDialogContentState();
+}
+
+class _AddAppointmentDialogContentState extends State<AddAppointmentDialogContent> {
+  late Future<List<Identity>> _futureActiveIdentities;
+
+  DateTime? _date;
+  String _medication = "";
+  Identity? _selectedIdentity;
+
+  String _idMrn = "";
+  String _idLast = "";
+  String _idFirst = "";
+  DateTime _idDob = DateTime.now();
+  String _idGender = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _futureActiveIdentities = _fetchActiveIdentities();
+  }
+
+  Widget _createIdentityList(List<Identity> identities) {
+    ListView identityList = ListView.builder(
+      itemCount: identities.length,
+      itemBuilder: (context, index) {
+        Identity identity = identities[index];
+
+        Row title = Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [Text(identity.patientLast + ", " + identity.patientFirst)]);
+        Row subtitle = Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [Text("Gender: " + identity.gender), Text("DOB: " + formatDate(identity.dateOfBirth)), Text("MRN: " + identity.mrn)]);
+
+        return Card(
+            child: ListTile(
+                title: title,
+                subtitle: subtitle,
+                selectedColor: Colors.white,
+                selectedTileColor: Colors.blue,
+                selected: _selectedIdentity == identity,
+                onTap: () {
+                  setState(() {
+                    _selectedIdentity = identity;
+                  });
+                }));
+      },
+    );
+
+    return SizedBox(height: 230, width: 600, child: identityList);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      constraints: const BoxConstraints(minHeight: 500, minWidth: 600, maxHeight: 500, maxWidth: 600),
+      child: Column(
+        children: [
+          const Text(
+            "Add Appointment",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          Container(
+              margin: const EdgeInsets.only(top: 15.0, bottom: 10.0),
+              child: const Text(
+                "Active Identities",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              )),
+          FutureBuilder<List<Identity>>(
+              future: _futureActiveIdentities,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return _createIdentityList(snapshot.data!);
+                } else if (snapshot.hasError) {
+                  return Text("${snapshot.error}");
+                } else {
+                  return circularProgressIndicatorWidget();
+                }
+              }),
+          TextFormField(
+            decoration: const InputDecoration(
+              filled: false,
+              labelText: 'Medication:',
+            ),
+            onChanged: (value) {
+              setState(() {
+                _medication = value;
+              });
+            },
+          ),
+          InputDatePickerFormField(
+            fieldLabelText: 'Date:',
+            firstDate: DateTime(1900),
+            lastDate: DateTime(2200),
+            onDateSubmitted: (value) {
+              setState(() {
+                _date = value;
+              });
+            },
+          ),
+          Container(
+              margin: const EdgeInsets.only(top: 40.0),
+              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                TextButton(
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: ElevatedButton(
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    onPressed: () {
+                      Identity ident = _selectedIdentity ??
+                          Identity(
+                              id: null,
+                              upi: "",
+                              mrn: _idMrn,
+                              patientLast: _idLast,
+                              patientFirst: _idFirst,
+                              dateOfBirth: _idDob,
+                              gender: _idGender,
+                              active: true,
+                              createDate: null,
+                              endDate: null,
+                              createdBy: "",
+                              modifiedBy: "");
+
+                      IdentityMap identMap = IdentityMap(id: null, identity: ident);
+
+                      Appointment appt = Appointment(
+                        id: null,
+                        identityMap: identMap,
+                        date: _date!,
+                        medication: _medication,
+                      );
+
+                      _addAppointment(appt).then((updated) {
+                        Navigator.pop(context);
+                        // TODO CALLBACK TO PARENT TO REFRESH APPOINTMENTS
+                        // setState(() {
+                        //   _futureAppointments = _fetchAppointments();
+                        // });
+                      });
+                    },
+                  ),
+                ),
+              ])),
+        ],
+      ),
+    );
   }
 
   Future<List<Identity>> _fetchActiveIdentities() async {
