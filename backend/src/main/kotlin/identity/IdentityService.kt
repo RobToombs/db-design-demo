@@ -25,6 +25,10 @@ class IdentityService(
         return identityRepository.findAllByOrderByIdAsc()
     }
 
+    fun getActiveIdentities(): List<Identity> {
+        return identityRepository.findByActiveIsTrueOrderByPatientLastAsc()
+    }
+
     fun updateIdentity(updatedIdentity: Identity) : Boolean {
         if(updatedIdentity.id == null || !identityRepository.existsById(updatedIdentity.id!!)) {
             return false
@@ -38,7 +42,7 @@ class IdentityService(
             || existingIdentity.gender != updatedIdentity.gender
             || existingIdentity.dateOfBirth != updatedIdentity.dateOfBirth
         ) {
-            val now = LocalDateTime.now();
+            val now = LocalDateTime.now()
 
             existingIdentity.endDate = now
             existingIdentity.modifiedBy = USER

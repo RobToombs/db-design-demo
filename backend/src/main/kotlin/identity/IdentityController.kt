@@ -15,6 +15,12 @@ class IdentityController(
         return ResponseEntity(identities, HttpStatus.OK)
     }
 
+    @GetMapping("/identities/active")
+    fun activeIdentities(): ResponseEntity<List<Identity>> {
+        val identities = identityService.getActiveIdentities()
+        return ResponseEntity(identities, HttpStatus.OK)
+    }
+
     @PutMapping("/identities/update")
     fun updateIdentity(@RequestBody identity: Identity): ResponseEntity<Boolean> {
         val updated = identityService.updateIdentity(identity)

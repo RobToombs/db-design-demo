@@ -41,11 +41,7 @@ class _PatientCentricPageState extends State<PatientCentricPage> {
             bottom: const TabBar(
               labelColor: Colors.blue,
               unselectedLabelColor: Colors.white,
-              indicator: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10)),
-                  color: Colors.white),
+              indicator: BoxDecoration(borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)), color: Colors.white),
               tabs: [
                 Tab(text: "Appointments"),
                 Tab(text: "Refills"),

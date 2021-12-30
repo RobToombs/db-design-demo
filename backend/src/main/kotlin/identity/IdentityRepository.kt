@@ -4,4 +4,5 @@ import org.springframework.data.repository.CrudRepository
 
 interface IdentityRepository : CrudRepository<Identity, Long> {
     fun findAllByOrderByIdAsc() : List<Identity>
+    fun findByActiveIsTrueOrderByPatientLastAsc(): List<Identity>
 }

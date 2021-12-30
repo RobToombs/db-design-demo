@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 class Identity {
-  int id;
+  int? id;
   String upi;
   String mrn;
   String patientLast;
@@ -9,7 +9,7 @@ class Identity {
   DateTime dateOfBirth;
   String gender;
   bool active;
-  DateTime createDate;
+  DateTime? createDate;
   DateTime? endDate;
   String createdBy;
   String modifiedBy;
@@ -55,7 +55,9 @@ class Identity {
         'dateOfBirth': DateFormat('yyyy-MM-dd').format(dateOfBirth),
         'gender': gender,
         'active': active,
-        'createDate': DateFormat('yyyy-MM-dd hh:mm:ss').format(createDate),
+        'createDate': createDate == null
+            ? null
+            : DateFormat('yyyy-MM-dd hh:mm:ss').format(createDate!),
         'endDate': endDate == null
             ? null
             : DateFormat('yyyy-MM-dd hh:mm:ss').format(endDate!),
@@ -65,7 +67,7 @@ class Identity {
 }
 
 class IdentityMap {
-  int id;
+  int? id;
   Identity identity;
 
   IdentityMap({
@@ -79,6 +81,11 @@ class IdentityMap {
       identity: Identity.fromJson(json['identity']),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'identity': identity.toJson(),
+      };
 }
 
 class IdentityMapHistory {
@@ -114,7 +121,7 @@ class IdentityMapHistory {
 }
 
 class Appointment {
-  int id;
+  int? id;
   IdentityMap identityMap;
   DateTime date;
   String medication;
@@ -134,6 +141,13 @@ class Appointment {
       medication: json['medication'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'identityMap': identityMap.toJson(),
+        'date': DateFormat('yyyy-MM-dd').format(date),
+        'medication': medication,
+      };
 }
 
 class Refill {

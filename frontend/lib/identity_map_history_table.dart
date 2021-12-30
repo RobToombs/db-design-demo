@@ -22,10 +22,7 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
     return Center(
       child: Column(
         children: [
-          const Padding(
-              padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
-              child: Text("Identity Map History",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+          const Padding(padding: EdgeInsets.only(top: 40.0, bottom: 10.0), child: Text("Identity Map History", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
           FutureBuilder<List<IdentityMapHistory>>(
               future: _futureIdentityMapHistories,
               builder: (context, snapshot) {
@@ -42,10 +39,8 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
     );
   }
 
-  Widget _identityMapHistoryTable(
-      List<IdentityMapHistory> identityMapHistories) {
-    List<TableRow> identityRows = identityMapHistories
-        .map<TableRow>((IdentityMapHistory identityMapHistory) {
+  Widget _identityMapHistoryTable(List<IdentityMapHistory> identityMapHistories) {
+    List<TableRow> identityRows = identityMapHistories.map<TableRow>((IdentityMapHistory identityMapHistory) {
       return TableRow(children: <Widget>[
         createCell(identityMapHistory.id.toString()),
         createCell(formatDateTime(identityMapHistory.createDate)),
@@ -103,14 +98,10 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
   }
 
   Future<List<IdentityMapHistory>> _fetchIdentityMapHistories() async {
-    http.Response response = await http
-        .get(Uri.http('localhost:8080', 'api/identity-map-histories'));
+    http.Response response = await http.get(Uri.http('localhost:8080', 'api/identity-map-histories'));
 
     if (response.statusCode == HttpStatus.ok) {
-      return (jsonDecode(response.body) as List)
-          .map((identityMapHistory) =>
-              IdentityMapHistory.fromJson(identityMapHistory))
-          .toList();
+      return (jsonDecode(response.body) as List).map((identityMapHistory) => IdentityMapHistory.fromJson(identityMapHistory)).toList();
     } else {
       throw Exception('Failed to load identity map histories');
     }

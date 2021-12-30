@@ -60,7 +60,7 @@ class _RefillTableState extends State<RefillTable> {
     List<TableRow> tableContent = [_refillHeaders()];
     tableContent.addAll(refillRows);
 
-    return Table(
+    Table table = Table(
       border: TableBorder.all(color: Colors.grey),
       columnWidths: const <int, TableColumnWidth>{
         0: FixedColumnWidth(50),
@@ -72,6 +72,16 @@ class _RefillTableState extends State<RefillTable> {
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
     );
+
+    Scaffold content = Scaffold(
+      body: table,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
+    );
+
+    return content;
   }
 
   TableRow _refillHeaders() {

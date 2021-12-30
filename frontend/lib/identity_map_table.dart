@@ -10,8 +10,7 @@ import 'models.dart';
 
 class IdentityMapTable extends StatefulWidget {
   final VoidCallback refreshIdentity;
-  const IdentityMapTable({Key? key, required this.refreshIdentity})
-      : super(key: key);
+  const IdentityMapTable({Key? key, required this.refreshIdentity}) : super(key: key);
 
   @override
   IdentityMapTableState createState() => IdentityMapTableState();
@@ -25,10 +24,7 @@ class IdentityMapTableState extends State<IdentityMapTable> {
     return Center(
       child: Column(
         children: [
-          const Padding(
-              padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
-              child: Text("Identity Map",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+          const Padding(padding: EdgeInsets.only(top: 40.0, bottom: 10.0), child: Text("Identity Map", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
           FutureBuilder<List<IdentityMap>>(
               future: _futureIdentityMaps,
               builder: (context, snapshot) {
@@ -46,8 +42,7 @@ class IdentityMapTableState extends State<IdentityMapTable> {
   }
 
   Widget _identityMapTable(List<IdentityMap> identityMaps) {
-    List<TableRow> identityRows =
-        identityMaps.map<TableRow>((IdentityMap identityMap) {
+    List<TableRow> identityRows = identityMaps.map<TableRow>((IdentityMap identityMap) {
       return TableRow(children: <Widget>[
         createCell(identityMap.id.toString()),
         createCell(identityMap.identity.id.toString()),
@@ -104,18 +99,16 @@ class IdentityMapTableState extends State<IdentityMapTable> {
   }
 
   _showEditModal(context, IdentityMap identityMap) {
-    int newIdentityId = identityMap.identity.id;
+    int? newIdentityId = identityMap.identity.id;
 
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5.0)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
             child: Container(
               padding: const EdgeInsets.all(16.0),
-              constraints: const BoxConstraints(
-                  minHeight: 180, minWidth: 500, maxHeight: 180, maxWidth: 500),
+              constraints: const BoxConstraints(minHeight: 180, minWidth: 500, maxHeight: 180, maxWidth: 500),
               child: Column(
                 children: [
                   const Text(
@@ -126,8 +119,7 @@ class IdentityMapTableState extends State<IdentityMapTable> {
                   TextFormField(
                     decoration: InputDecoration(
                       filled: false,
-                      labelText:
-                          'Identity Id: ' + identityMap.identity.id.toString(),
+                      labelText: 'Identity Id: ' + identityMap.identity.id.toString(),
                     ),
                     initialValue: identityMap.identity.id.toString(),
                     inputFormatters: [
@@ -142,35 +134,34 @@ class IdentityMapTableState extends State<IdentityMapTable> {
                   ),
                   Container(
                       margin: const EdgeInsets.only(top: 40.0),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(fontSize: 20),
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
+                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                        TextButton(
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: ElevatedButton(
+                            child: const Text(
+                              'Save',
+                              style: TextStyle(fontSize: 20),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0),
-                              child: ElevatedButton(
-                                child: const Text(
-                                  'Save',
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                                onPressed: () {
-                                  _updateIdentityMap(identityMap, newIdentityId)
-                                      .then((updated) {
-                                    Navigator.pop(context);
-                                    widget.refreshIdentity();
-                                  });
-                                },
-                              ),
-                            ),
-                          ])),
+                            onPressed: () {
+                              if (newIdentityId != null) {
+                                _updateIdentityMap(identityMap, newIdentityId!).then((updated) {
+                                  Navigator.pop(context);
+                                  widget.refreshIdentity();
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ])),
                 ],
               ),
             ),
@@ -191,20 +182,16 @@ class IdentityMapTableState extends State<IdentityMapTable> {
   }
 
   Future<List<IdentityMap>> _fetchIdentityMaps() async {
-    http.Response response =
-        await http.get(Uri.http('localhost:8080', 'api/identity-maps'));
+    http.Response response = await http.get(Uri.http('localhost:8080', 'api/identity-maps'));
 
     if (response.statusCode == http.HttpStatus.ok) {
-      return (jsonDecode(response.body) as List)
-          .map((identityMap) => IdentityMap.fromJson(identityMap))
-          .toList();
+      return (jsonDecode(response.body) as List).map((identityMap) => IdentityMap.fromJson(identityMap)).toList();
     } else {
       throw Exception('Failed to load identity maps');
     }
   }
 
-  Future<bool> _updateIdentityMap(
-      IdentityMap identityMap, int newIdentityId) async {
+  Future<bool> _updateIdentityMap(IdentityMap identityMap, int newIdentityId) async {
     String url = 'api/identity-maps/update/' + identityMap.id.toString();
     http.Response response = await http.put(Uri.http('localhost:8080', url),
         headers: <String, String>{
