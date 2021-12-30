@@ -9,4 +9,8 @@ class AppointmentService(
     fun getAppointments() : List<Appointment> {
         return appointmentRepository.findAll().toList()
     }
+
+    fun addAppointment(appointment: Appointment) : Boolean {
+        return true
+    }
 }

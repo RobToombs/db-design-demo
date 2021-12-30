@@ -27,6 +27,10 @@ class _AppointmentTableState extends State<AppointmentTable> {
   late Future<List<Appointment>> _futureAppointments;
   late Future<List<Identity>> _futureActiveIdentities;
 
+  DateTime? _date;
+  String _medication = "";
+  Identity? _selectedIdentity;
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Appointment>>(
@@ -110,16 +114,38 @@ class _AppointmentTableState extends State<AppointmentTable> {
     _futureAppointments = _fetchAppointments();
   }
 
-  _showAddModal(context) {
-    DateTime? date;
-    String? medication;
-    Identity? selectedIdentity;
-
+  void _showAddModal(context) {
     String idMrn = "";
     String idLast = "";
     String idFirst = "";
     DateTime idDob = DateTime.now();
     String idGender = "";
+
+    Widget _createIdentityList(List<Identity> identities) {
+      ListView identityList = ListView.builder(
+        itemCount: identities.length,
+        itemBuilder: (context, index) {
+          Identity identity = identities[index];
+
+          Row title = Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [Text(identity.patientLast + ", " + identity.patientFirst)]);
+          Row subtitle = Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [Text("Gender: " + identity.gender), Text("DOB: " + formatDate(identity.dateOfBirth)), Text("MRN: " + identity.mrn)]);
+
+          return Card(
+              child: ListTile(
+                  title: title,
+                  subtitle: subtitle,
+                  onTap: () {
+                    setState(() {
+                      _selectedIdentity = identity;
+                    });
+                  }));
+        },
+      );
+
+      return SizedBox(height: 230, width: 600, child: identityList);
+    }
 
     showDialog(
         context: context,
@@ -136,31 +162,10 @@ class _AppointmentTableState extends State<AppointmentTable> {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      filled: false,
-                      labelText: 'Medication:',
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        medication = value;
-                      });
-                    },
-                  ),
-                  InputDatePickerFormField(
-                    fieldLabelText: 'Date:',
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2200),
-                    onDateSubmitted: (value) {
-                      setState(() {
-                        date = value;
-                      });
-                    },
-                  ),
                   Container(
                       margin: const EdgeInsets.only(top: 15.0, bottom: 10.0),
-                      child: const Text(
-                        "Active Identities",
+                      child: Text(
+                        "Active Identities " + _medication,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       )),
                   FutureBuilder<List<Identity>>(
@@ -174,6 +179,27 @@ class _AppointmentTableState extends State<AppointmentTable> {
                           return circularProgressIndicatorWidget();
                         }
                       }),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      filled: false,
+                      labelText: 'Medication:',
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _medication = value;
+                      });
+                    },
+                  ),
+                  InputDatePickerFormField(
+                    fieldLabelText: 'Date:',
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2200),
+                    onDateSubmitted: (value) {
+                      setState(() {
+                        _date = value;
+                      });
+                    },
+                  ),
                   Container(
                       margin: const EdgeInsets.only(top: 40.0),
                       child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -194,7 +220,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
                               style: TextStyle(fontSize: 20),
                             ),
                             onPressed: () {
-                              Identity ident = selectedIdentity ??
+                              Identity ident = _selectedIdentity ??
                                   Identity(
                                       id: null,
                                       upi: "",
@@ -214,8 +240,8 @@ class _AppointmentTableState extends State<AppointmentTable> {
                               Appointment appt = Appointment(
                                 id: null,
                                 identityMap: identMap,
-                                date: date!,
-                                medication: medication!,
+                                date: _date!,
+                                medication: _medication,
                               );
 
                               _addAppointment(appt).then((updated) {
@@ -233,29 +259,6 @@ class _AppointmentTableState extends State<AppointmentTable> {
             ),
           );
         });
-  }
-
-  Widget _createIdentityList(List<Identity> identities) {
-    ListView identityList = ListView.builder(
-      itemCount: identities.length,
-      itemBuilder: (context, index) {
-        Identity identity = identities[index];
-
-        String text = identity.patientLast +
-            ", " +
-            identity.patientFirst +
-            " (" +
-            identity.gender +
-            ")   -    " +
-            formatDate(identity.dateOfBirth) +
-            "    -    " +
-            identity.mrn;
-
-        return Card(child: ListTile(title: Text(text)));
-      },
-    );
-
-    return SizedBox(height: 230, width: 600, child: identityList);
   }
 
   Future<List<Appointment>> _fetchAppointments() async {
