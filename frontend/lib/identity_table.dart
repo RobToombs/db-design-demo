@@ -10,8 +10,7 @@ import 'models.dart';
 
 class IdentityTable extends StatefulWidget {
   final VoidCallback refreshIdentity;
-  const IdentityTable({Key? key, required this.refreshIdentity})
-      : super(key: key);
+  const IdentityTable({Key? key, required this.refreshIdentity}) : super(key: key);
 
   @override
   IdentityTableState createState() => IdentityTableState();
@@ -25,10 +24,7 @@ class IdentityTableState extends State<IdentityTable> {
     return Center(
       child: Column(
         children: [
-          const Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Text("Identity",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+          const Padding(padding: EdgeInsets.all(10.0), child: Text("Identity", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
           FutureBuilder<List<Identity>>(
               future: _futureIdentities,
               builder: (context, snapshot) {
@@ -129,22 +125,20 @@ class IdentityTableState extends State<IdentityTable> {
   }
 
   _showEditModal(context, Identity identity) {
-    String updatedMrn = identity.mrn;
-    String updatedLast = identity.patientLast;
-    String updatedFirst = identity.patientFirst;
-    DateTime updatedDob = identity.dateOfBirth;
-    String updatedGender = identity.gender;
+    String _updatedMrn = identity.mrn;
+    String _updatedLast = identity.patientLast;
+    String _updatedFirst = identity.patientFirst;
+    DateTime _updatedDob = identity.dateOfBirth;
+    String _updatedGender = identity.gender;
 
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5.0)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
             child: Container(
               padding: const EdgeInsets.all(16.0),
-              constraints: const BoxConstraints(
-                  minHeight: 385, minWidth: 600, maxHeight: 385, maxWidth: 600),
+              constraints: const BoxConstraints(minHeight: 385, minWidth: 600, maxHeight: 385, maxWidth: 600),
               child: Column(
                 children: [
                   const Text(
@@ -155,98 +149,95 @@ class IdentityTableState extends State<IdentityTable> {
                   TextFormField(
                     decoration: InputDecoration(
                       filled: false,
-                      labelText: 'MRN: ' + identity.mrn,
+                      labelText: 'MRN:' + identity.mrn,
                     ),
                     initialValue: identity.mrn,
                     onChanged: (value) {
                       setState(() {
-                        updatedMrn = value;
+                        _updatedMrn = value;
                       });
                     },
                   ),
                   TextFormField(
                     decoration: InputDecoration(
                       filled: false,
-                      labelText: 'Last Name: ' + identity.patientLast,
+                      labelText: 'Last Name:' + identity.patientLast,
                     ),
                     initialValue: identity.patientLast,
                     onChanged: (value) {
                       setState(() {
-                        updatedLast = value;
+                        _updatedLast = value;
                       });
                     },
                   ),
                   TextFormField(
                     decoration: InputDecoration(
                       filled: false,
-                      labelText: 'First Name: ' + identity.patientFirst,
+                      labelText: 'First Name:' + identity.patientFirst,
                     ),
                     initialValue: identity.patientFirst,
                     onChanged: (value) {
                       setState(() {
-                        updatedFirst = value;
+                        _updatedFirst = value;
                       });
                     },
                   ),
                   InputDatePickerFormField(
-                    fieldLabelText: 'DOB: ' +
-                        DateFormat('dd/MM/yyyy').format(identity.dateOfBirth),
+                    fieldLabelText: 'DOB:' + DateFormat('dd/MM/yyyy').format(identity.dateOfBirth),
                     firstDate: DateTime(1900),
                     lastDate: DateTime.now(),
                     initialDate: identity.dateOfBirth,
                     onDateSubmitted: (value) {
                       setState(() {
-                        updatedDob = value;
+                        _updatedDob = value;
                       });
                     },
                   ),
                   TextFormField(
                     decoration: InputDecoration(
                       filled: false,
-                      labelText: 'Gender: ' + identity.gender,
+                      labelText: 'Gender:' + identity.gender,
                     ),
                     initialValue: identity.gender,
                     onChanged: (value) {
                       setState(() {
-                        updatedGender = value;
+                        _updatedGender = value;
                       });
                     },
                   ),
                   Container(
                       margin: const EdgeInsets.only(top: 40.0),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(fontSize: 20),
-                              ),
-                              onPressed: () {
+                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                        TextButton(
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: ElevatedButton(
+                            child: const Text(
+                              'Save',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            onPressed: () {
+                              identity.mrn = _updatedMrn;
+                              identity.patientFirst = _updatedFirst;
+                              identity.patientLast = _updatedLast;
+                              identity.gender = _updatedGender;
+                              identity.dateOfBirth = _updatedDob;
+                              _updateIdentity(identity).then((updated) {
                                 Navigator.pop(context);
-                              },
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 10.0),
-                              child: ElevatedButton(
-                                child: const Text(
-                                  'Save',
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                                onPressed: () {
-                                  identity.mrn = updatedMrn;
-                                  identity.patientFirst = updatedFirst;
-                                  identity.patientLast = updatedLast;
-                                  identity.gender = updatedGender;
-                                  identity.dateOfBirth = updatedDob;
-                                  _updateIdentity(identity).then((updated) {
-                                    Navigator.pop(context);
-                                    widget.refreshIdentity();
-                                  });
-                                },
-                              ),
-                            ),
-                          ])),
+                                widget.refreshIdentity();
+                              });
+                            },
+                          ),
+                        ),
+                      ])),
                 ],
               ),
             ),
@@ -267,13 +258,10 @@ class IdentityTableState extends State<IdentityTable> {
   }
 
   Future<List<Identity>> _fetchIdentities() async {
-    http.Response response =
-        await http.get(Uri.http('localhost:8080', 'api/identities'));
+    http.Response response = await http.get(Uri.http('localhost:8080', 'api/identities'));
 
     if (response.statusCode == HttpStatus.ok) {
-      return (jsonDecode(response.body) as List)
-          .map((identity) => Identity.fromJson(identity))
-          .toList();
+      return (jsonDecode(response.body) as List).map((identity) => Identity.fromJson(identity)).toList();
     } else {
       throw Exception('Failed to load identities');
     }

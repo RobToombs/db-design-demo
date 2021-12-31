@@ -27,6 +27,12 @@ class IdentityController(
         return ResponseEntity(updated, HttpStatus.CREATED)
     }
 
+    @PutMapping("/identities/add")
+    fun addIdentity(@RequestBody identity: Identity): ResponseEntity<Boolean> {
+        val result = identityService.addIdentity(identity)
+        return ResponseEntity(result != null, HttpStatus.CREATED)
+    }
+
     @GetMapping("/identity-maps")
     fun identityMaps(): ResponseEntity<List<IdentityMap>> {
         val identityMaps = identityService.getIdentityMaps()

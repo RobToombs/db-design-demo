@@ -88,7 +88,7 @@ class IdentityMapHistory {
   int id;
   DateTime createDate;
   int identityMapId;
-  int oldIdentityId;
+  int? oldIdentityId;
   int newIdentityId;
   String createdBy;
   String event;
@@ -108,7 +108,7 @@ class IdentityMapHistory {
       id: json['id'] as int,
       createDate: DateTime.parse(json['createDate']),
       identityMapId: json['identityMapId'] as int,
-      oldIdentityId: json['oldIdentityId'] as int,
+      oldIdentityId: json['oldIdentityId'] == null ? null : json['oldIdentityId'] as int,
       newIdentityId: json['newIdentityId'] as int,
       createdBy: json['createdBy'] as String,
       event: json['event'] as String,

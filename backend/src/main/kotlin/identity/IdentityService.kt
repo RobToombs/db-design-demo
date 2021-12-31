@@ -1,7 +1,9 @@
 package com.toombs.backend.identity
 
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.transaction.Transactional
 
 
@@ -11,6 +13,8 @@ class IdentityService(
     private val identityMapRepository: IdentityMapRepository,
     private val identityMapHistoryRepository: IdentityMapHistoryRepository,
 ) {
+    private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
     private val USER = "rtoombs@shieldsrx.com"
     private val MERGE = "MERGE"
     private val UPDATE = "UPDATE"
@@ -44,8 +48,8 @@ class IdentityService(
             existingIdentity.active = false
 
             save(existingIdentity)
-
-            val newIdentity = createNewIdentity(updatedIdentity)
+            // TODO search for existing UPI?
+            val newIdentity = createNewIdentity(updatedIdentity, existingIdentity.upi)
             val activeIdentity : Identity = save(newIdentity)
 
             updateIdentityMaps(activeIdentity, updatedIdentity.id!!, now)
@@ -93,21 +97,27 @@ class IdentityService(
 
             if (mapId == null) {
                 val identity = findActiveOrCreateNewIdentity(identityMap.identity)
-
-                if(identity != null) {
-                    if(identityMapRepository.existsByIdentityId(identity.id!!)) {
-                        result = identityMapRepository.findFirstByIdentityId(identity.id!!)
-                    }
-                    else {
-                        val newMapping = IdentityMap()
-                        newMapping.identity = identity
-                        result = save(newMapping)
-                        createIdentityMapHistoryEntry(result.id, null, result.identity?.id, LocalDateTime.now(), CREATE)
-                    }
-                }
+                result = createActiveIdentityMap(identity)
             }
             else if(identityMapRepository.existsById(mapId)) {
                 result = identityMapRepository.findById(mapId).get()
+            }
+        }
+
+        return result
+    }
+
+    private fun createActiveIdentityMap(identity: Identity?): IdentityMap? {
+        var result: IdentityMap? = null
+
+        if (identity != null) {
+            if (identityMapRepository.existsByIdentityId(identity.id!!)) {
+                result = identityMapRepository.findFirstByIdentityId(identity.id!!)
+            } else {
+                val newMapping = IdentityMap()
+                newMapping.identity = identity
+                result = save(newMapping)
+                createIdentityMapHistoryEntry(result.id, null, result.identity?.id, LocalDateTime.now(), CREATE)
             }
         }
 
@@ -120,7 +130,9 @@ class IdentityService(
         if(identity != null) {
             val id = identity.id
             if (id == null) {
-                result = createNewIdentity(identity)
+                val upi = generateUPI(identity)
+                // TODO Search for existing UPI?
+                result = createNewIdentity(identity, upi)
             }
             else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
                 result = identityRepository.findById(id).get()
@@ -130,12 +142,30 @@ class IdentityService(
         return result
     }
 
-    private fun createNewIdentity(identity: Identity): Identity {
+    fun addIdentity(identity: Identity): Identity? {
+        val upi = generateUPI(identity)
+        // TODO search for existing UPI?
+        val newIdentity = createNewIdentity(identity, upi)
+        createActiveIdentityMap(newIdentity)
+        return newIdentity
+    }
+
+    private fun generateUPI(identity: Identity): String {
+        val lastName = identity.patientLast
+        val dob = identity.dateOfBirth
+        val gender = identity.gender
+
+        val combination = lastName + "/" + dob?.format(DATE_FORMATTER) + "/" + gender
+        return combination.hashCode().toString()
+    }
+
+    private fun createNewIdentity(identity: Identity, upi: String): Identity {
         val newIdentity = Identity()
         newIdentity.gender = identity.gender
         newIdentity.patientLast = identity.patientLast
         newIdentity.patientFirst = identity.patientFirst
         newIdentity.dateOfBirth = identity.dateOfBirth
+        newIdentity.upi = upi
         newIdentity.mrn = identity.mrn
         newIdentity.active = true
         newIdentity.createdBy = USER
@@ -143,7 +173,7 @@ class IdentityService(
         newIdentity.modifiedBy = ""
         newIdentity.createDate = LocalDateTime.now()
 
-        return save(identity)
+        return save(newIdentity)
     }
 
     @Transactional

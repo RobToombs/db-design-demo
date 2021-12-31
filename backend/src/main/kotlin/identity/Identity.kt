@@ -11,7 +11,7 @@ data class Identity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    val upi: String = "",
+    var upi: String = "",
 
     var mrn: String = "",
 
