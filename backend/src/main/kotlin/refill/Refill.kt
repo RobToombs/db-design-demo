@@ -13,12 +13,12 @@ data class Refill(
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)
     @JoinColumn(name = "identity_map_id")
-    val IdentityMap: IdentityMap? = null,
+    var identityMap: IdentityMap? = null,
 
     @JsonFormat(pattern="yyyy-MM-dd")
-    val date: LocalDate? = null,
+    var date: LocalDate? = null,
 
-    val callAttempts: Int = 0,
+    var callAttempts: Int = 0,
 
-    val medication: String = "",
+    var medication: String = "",
 )

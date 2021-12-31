@@ -95,8 +95,8 @@ class IdentityService(
                 val identity = findActiveOrCreateNewIdentity(identityMap.identity)
 
                 if(identity != null) {
-                    if(identityMapRepository.existsByIdentity(identity.id!!)) {
-                        result = identityMapRepository.findFirstByIdentity(identity.id!!)
+                    if(identityMapRepository.existsByIdentityId(identity.id!!)) {
+                        result = identityMapRepository.findFirstByIdentityId(identity.id!!)
                     }
                     else {
                         val newMapping = IdentityMap()
