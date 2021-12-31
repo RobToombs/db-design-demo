@@ -6,6 +6,9 @@ INSERT INTO identity (id, upi, mrn, patient_last, patient_first, date_of_birth, 
 INSERT INTO identity_map (id, identity_id) VALUES (1, 1);
 INSERT INTO identity_map (id, identity_id) VALUES (2, 2);
 
+INSERT INTO identity_map_history (id, create_date, created_by, event, identity_map_id, new_identity_id, old_identity_id) VALUES (1, now(), 'dani@shieldsrx.com', 'CREATE', 1, 1, null);
+INSERT INTO identity_map_history (id, create_date, created_by, event, identity_map_id, new_identity_id, old_identity_id) VALUES (2, now(), 'stella@shieldsrx.com', 'CREATE', 2, 2, null);
+
 INSERT INTO appointment (id, identity_map_id, date, medication) VALUES (1, 1, '2021-12-24 07:30:00', 'Coffee');
 INSERT INTO appointment (id, identity_map_id, date, medication) VALUES (2, 2, '2021-12-25 09:00:00', 'Apples');
 
@@ -17,3 +20,4 @@ SELECT setval('identity_id_seq', (SELECT MAX(id) FROM identity));
 SELECT setval('identity_map_id_seq', (SELECT MAX(id) FROM identity_map));
 SELECT setval('appointment_id_seq', (SELECT MAX(id) FROM appointment));
 SELECT setval('refill_id_seq', (SELECT MAX(id) FROM refill));
+SELECT setval('identity_map_history_id_seq', (SELECT MAX(id) FROM identity_map_history));
