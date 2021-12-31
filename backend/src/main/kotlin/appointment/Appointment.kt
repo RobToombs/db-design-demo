@@ -13,10 +13,10 @@ data class Appointment(
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)
     @JoinColumn(name = "identity_map_id")
-    val IdentityMap: IdentityMap? = null,
+    var identityMap: IdentityMap? = null,
 
     @JsonFormat(pattern="yyyy-MM-dd")
-    val date: LocalDate? = null,
+    var date: LocalDate? = null,
 
-    val medication: String = "",
+    var medication: String = "",
 )

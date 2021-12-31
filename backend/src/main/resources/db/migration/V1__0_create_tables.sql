@@ -26,7 +26,7 @@ create table identity_map_history (
       id                BIGSERIAL PRIMARY KEY,
       create_date       TIMESTAMP NOT NULL,
       identity_map_id   BIGINT NOT NULL,
-      old_identity_id   BIGINT NOT NULL,
+      old_identity_id   BIGINT DEFAULT NULL,
       new_identity_id   BIGINT NOT NULL,
       created_by        TEXT NOT NULL DEFAULT '',
       event             TEXT NOT NULL DEFAULT ''

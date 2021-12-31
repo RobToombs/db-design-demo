@@ -18,7 +18,7 @@ class AppointmentController (
 
     @PutMapping("/appointments/add")
     fun addAppointment(@RequestBody appointment: Appointment): ResponseEntity<Boolean> {
-        val updated = appointmentService.addAppointment(appointment)
-        return ResponseEntity(updated, HttpStatus.CREATED)
+        appointmentService.addAppointment(appointment)
+        return ResponseEntity(true, HttpStatus.CREATED)
     }
 }

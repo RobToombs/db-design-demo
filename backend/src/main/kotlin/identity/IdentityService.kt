@@ -2,8 +2,6 @@ package com.toombs.backend.identity
 
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import javax.persistence.EntityManager
-import javax.persistence.PersistenceContext
 import javax.transaction.Transactional
 
 
@@ -13,9 +11,6 @@ class IdentityService(
     private val identityMapRepository: IdentityMapRepository,
     private val identityMapHistoryRepository: IdentityMapHistoryRepository,
 ) {
-    @PersistenceContext
-    var entityManager: EntityManager? = null
-
     private val USER = "rtoombs@shieldsrx.com"
     private val MERGE = "MERGE"
     private val UPDATE = "UPDATE"
@@ -30,7 +25,7 @@ class IdentityService(
     }
 
     fun updateIdentity(updatedIdentity: Identity) : Boolean {
-        if(updatedIdentity.id == null || !identityRepository.existsById(updatedIdentity.id!!)) {
+        if(updatedIdentity.id == null || !identityRepository.existsByIdAndActiveIsTrue(updatedIdentity.id!!)) {
             return false
         }
 
@@ -50,21 +45,8 @@ class IdentityService(
 
             save(existingIdentity)
 
-            entityManager?.detach(existingIdentity)
-
-            existingIdentity.patientFirst = updatedIdentity.patientFirst
-            existingIdentity.patientLast = updatedIdentity.patientLast
-            existingIdentity.mrn = updatedIdentity.mrn
-            existingIdentity.gender = updatedIdentity.gender
-            existingIdentity.dateOfBirth = updatedIdentity.dateOfBirth
-            existingIdentity.active = true
-            existingIdentity.createdBy = USER
-            existingIdentity.endDate = null
-            existingIdentity.modifiedBy = ""
-            existingIdentity.createDate = now
-            existingIdentity.id = null
-
-            val activeIdentity : Identity = save(existingIdentity)
+            val newIdentity = createNewIdentity(updatedIdentity)
+            val activeIdentity : Identity = save(newIdentity)
 
             updateIdentityMaps(activeIdentity, updatedIdentity.id!!, now)
 
@@ -79,7 +61,7 @@ class IdentityService(
     }
 
     fun updateIdentityMap(id: Long, newIdentityId: Long): Boolean {
-        if(!identityRepository.existsById(newIdentityId)) {
+        if(!identityRepository.existsByIdAndActiveIsTrue(newIdentityId)) {
             return false
         }
 
@@ -87,7 +69,7 @@ class IdentityService(
             return false
         }
 
-        val newIdentity = identityRepository.findById(newIdentityId).get()
+        val newIdentity = identityRepository.findByIdAndActiveIsTrue(newIdentityId)
         val identityMap = identityMapRepository.findById(id).get()
 
         createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, newIdentity.id, LocalDateTime.now(), MERGE)
@@ -101,6 +83,67 @@ class IdentityService(
 
     fun getIdentityMapHistories(): List<IdentityMapHistory> {
         return identityMapHistoryRepository.findAll().toList()
+    }
+
+    fun findOrCreateActiveIdentityMap(identityMap : IdentityMap?): IdentityMap? {
+        var result: IdentityMap? = null
+
+        if(identityMap != null) {
+            val mapId = identityMap.id
+
+            if (mapId == null) {
+                val identity = findActiveOrCreateNewIdentity(identityMap.identity)
+
+                if(identity != null) {
+                    if(identityMapRepository.existsByIdentity(identity.id!!)) {
+                        result = identityMapRepository.findFirstByIdentity(identity.id!!)
+                    }
+                    else {
+                        val newMapping = IdentityMap()
+                        newMapping.identity = identity
+                        result = save(newMapping)
+                        createIdentityMapHistoryEntry(result.id, null, result.identity?.id, LocalDateTime.now(), CREATE)
+                    }
+                }
+            }
+            else if(identityMapRepository.existsById(mapId)) {
+                result = identityMapRepository.findById(mapId).get()
+            }
+        }
+
+        return result
+    }
+
+    fun findActiveOrCreateNewIdentity(identity : Identity?): Identity? {
+        var result: Identity? = null
+
+        if(identity != null) {
+            val id = identity.id
+            if (id == null) {
+                result = createNewIdentity(identity)
+            }
+            else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
+                result = identityRepository.findById(id).get()
+            }
+        }
+
+        return result
+    }
+
+    private fun createNewIdentity(identity: Identity): Identity {
+        val newIdentity = Identity()
+        newIdentity.gender = identity.gender
+        newIdentity.patientLast = identity.patientLast
+        newIdentity.patientFirst = identity.patientFirst
+        newIdentity.dateOfBirth = identity.dateOfBirth
+        newIdentity.mrn = identity.mrn
+        newIdentity.active = true
+        newIdentity.createdBy = USER
+        newIdentity.endDate = null
+        newIdentity.modifiedBy = ""
+        newIdentity.createDate = LocalDateTime.now()
+
+        return save(identity)
     }
 
     @Transactional
