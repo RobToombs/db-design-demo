@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:html';
+import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -110,23 +110,31 @@ class _AppointmentTableState extends State<AppointmentTable> {
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return Dialog(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), child: AddAppointmentDialogContent());
+          return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), child: AddAppointmentDialogContent(refreshAppointment: refresh));
         });
   }
 
   Future<List<Appointment>> _fetchAppointments() async {
     http.Response response = await http.get(Uri.http('localhost:8080', 'api/appointments'));
 
-    if (response.statusCode == HttpStatus.ok) {
+    if (response.statusCode == html.HttpStatus.ok) {
       return (jsonDecode(response.body) as List).map((appointment) => Appointment.fromJson(appointment)).toList();
     } else {
       throw Exception('Failed to load appointments');
     }
   }
+
+  refresh() {
+    setState(() {
+      _futureAppointments = _fetchAppointments();
+    });
+  }
 }
 
 class AddAppointmentDialogContent extends StatefulWidget {
-  const AddAppointmentDialogContent({Key? key}) : super(key: key);
+  final VoidCallback refreshAppointment;
+  const AddAppointmentDialogContent({Key? key, required this.refreshAppointment}) : super(key: key);
 
   @override
   _AddAppointmentDialogContentState createState() => _AddAppointmentDialogContentState();
@@ -138,12 +146,6 @@ class _AddAppointmentDialogContentState extends State<AddAppointmentDialogConten
   DateTime? _date;
   String _medication = "";
   Identity? _selectedIdentity;
-
-  String _idMrn = "";
-  String _idLast = "";
-  String _idFirst = "";
-  DateTime _idDob = DateTime.now();
-  String _idGender = "";
 
   @override
   void initState() {
@@ -250,22 +252,7 @@ class _AddAppointmentDialogContentState extends State<AddAppointmentDialogConten
                       style: TextStyle(fontSize: 20),
                     ),
                     onPressed: () {
-                      Identity ident = _selectedIdentity ??
-                          Identity(
-                              id: null,
-                              upi: "",
-                              mrn: _idMrn,
-                              patientLast: _idLast,
-                              patientFirst: _idFirst,
-                              dateOfBirth: _idDob,
-                              gender: _idGender,
-                              active: true,
-                              createDate: null,
-                              endDate: null,
-                              createdBy: "",
-                              modifiedBy: "");
-
-                      IdentityMap identMap = IdentityMap(id: null, identity: ident);
+                      IdentityMap identMap = IdentityMap(id: null, identity: _selectedIdentity!);
 
                       Appointment appt = Appointment(
                         id: null,
@@ -276,10 +263,7 @@ class _AddAppointmentDialogContentState extends State<AddAppointmentDialogConten
 
                       _addAppointment(appt).then((updated) {
                         Navigator.pop(context);
-                        // TODO CALLBACK TO PARENT TO REFRESH APPOINTMENTS
-                        // setState(() {
-                        //   _futureAppointments = _fetchAppointments();
-                        // });
+                        widget.refreshAppointment();
                       });
                     },
                   ),
@@ -293,7 +277,7 @@ class _AddAppointmentDialogContentState extends State<AddAppointmentDialogConten
   Future<List<Identity>> _fetchActiveIdentities() async {
     http.Response response = await http.get(Uri.http('localhost:8080', 'api/identities/active'));
 
-    if (response.statusCode == HttpStatus.ok) {
+    if (response.statusCode == html.HttpStatus.ok) {
       return (jsonDecode(response.body) as List).map((identity) => Identity.fromJson(identity)).toList();
     } else {
       throw Exception('Failed to load identities');
@@ -309,7 +293,7 @@ class _AddAppointmentDialogContentState extends State<AddAppointmentDialogConten
       body: jsonEncode(appointment.toJson()),
     );
 
-    if (response.statusCode == HttpStatus.created) {
+    if (response.statusCode == html.HttpStatus.created) {
       return true;
     } else {
       throw Exception('Failed to create appointment');
