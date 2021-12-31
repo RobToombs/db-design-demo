@@ -111,8 +111,14 @@ class _AppointmentTableState extends State<AppointmentTable> {
         context: context,
         builder: (BuildContext context) {
           return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), child: AddAppointmentDialogContent(refreshAppointment: refresh));
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), child: AddAppointmentDialogContent(refreshAppointment: _refresh));
         });
+  }
+
+  void _refresh() {
+    setState(() {
+      _futureAppointments = _fetchAppointments();
+    });
   }
 
   Future<List<Appointment>> _fetchAppointments() async {
@@ -123,12 +129,6 @@ class _AppointmentTableState extends State<AppointmentTable> {
     } else {
       throw Exception('Failed to load appointments');
     }
-  }
-
-  refresh() {
-    setState(() {
-      _futureAppointments = _fetchAppointments();
-    });
   }
 }
 

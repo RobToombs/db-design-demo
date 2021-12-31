@@ -55,12 +55,8 @@ class Identity {
         'dateOfBirth': DateFormat('yyyy-MM-dd').format(dateOfBirth),
         'gender': gender,
         'active': active,
-        'createDate': createDate == null
-            ? null
-            : DateFormat('yyyy-MM-dd hh:mm:ss').format(createDate!),
-        'endDate': endDate == null
-            ? null
-            : DateFormat('yyyy-MM-dd hh:mm:ss').format(endDate!),
+        'createDate': createDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(createDate!),
+        'endDate': endDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(endDate!),
         'createdBy': createdBy,
         'modifiedBy': modifiedBy,
       };
@@ -151,7 +147,7 @@ class Appointment {
 }
 
 class Refill {
-  int id;
+  int? id;
   IdentityMap identityMap;
   DateTime date;
   int callAttempts;
@@ -174,4 +170,12 @@ class Refill {
       medication: json['medication'] as String,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'identityMap': identityMap.toJson(),
+        'date': DateFormat('yyyy-MM-dd').format(date),
+        'medication': medication,
+        'callAttempts': callAttempts,
+      };
 }
