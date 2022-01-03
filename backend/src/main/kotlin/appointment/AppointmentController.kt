@@ -1,5 +1,6 @@
 package com.toombs.backend.appointment
 
+import com.toombs.backend.identity.IdentityService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -7,7 +8,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api")
 class AppointmentController (
-    private val appointmentService: AppointmentService
+    private val appointmentService: AppointmentService,
+    private val identityService: IdentityService
 ) {
 
     @GetMapping("/appointments")
@@ -18,7 +20,8 @@ class AppointmentController (
 
     @PutMapping("/appointments/add")
     fun addAppointment(@RequestBody appointment: Appointment): ResponseEntity<Boolean> {
-        appointmentService.addAppointment(appointment)
+        val identityMap = identityService.findOrCreateActiveIdentityMap(appointment.identityMap)
+        appointmentService.addAppointment(appointment, identityMap)
         return ResponseEntity(true, HttpStatus.CREATED)
     }
 

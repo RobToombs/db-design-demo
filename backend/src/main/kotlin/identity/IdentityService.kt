@@ -11,6 +11,7 @@ class IdentityService(
     private val identityRepository: IdentityRepository,
     private val identityMapRepository: IdentityMapRepository,
     private val identityMapHistoryRepository: IdentityMapHistoryRepository,
+    private val identityHubService: IdentityHubService,
 ) {
     private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -18,7 +19,6 @@ class IdentityService(
     private val MERGE = "MERGE"
     private val UPDATE = "UPDATE"
     private val CREATE = "CREATE"
-    private val DEACTIVATED = "DEACTIVATED"
 
     fun getIdentities(): List<Identity> {
         return identityRepository.findAllByOrderByIdAsc()
@@ -43,11 +43,7 @@ class IdentityService(
         ) {
             val now = LocalDateTime.now()
 
-            existingIdentity.endDate = now
-            existingIdentity.modifiedBy = USER
-            existingIdentity.active = false
-
-            save(existingIdentity)
+            retireExistingIdentity(existingIdentity, now)
             // TODO search for existing UPI?
             val newIdentity = createNewIdentity(updatedIdentity, existingIdentity.upi)
             val activeIdentity : Identity = save(newIdentity)
@@ -107,6 +103,138 @@ class IdentityService(
         return result
     }
 
+    fun findActiveOrCreateNewIdentity(identity : Identity?): Identity? {
+        var result: Identity? = null
+
+        if(identity != null) {
+            val id = identity.id
+            if (id == null) {
+                val upi = generateUPI(identity)
+                // TODO Search for existing UPI?
+                result = createAndSaveNewIdentity(identity, upi)
+            }
+            else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
+                result = identityRepository.findById(id).get()
+            }
+        }
+
+        return result
+    }
+
+    fun addIdentity(identity: Identity): Identity? {
+        val upi = generateUPI(identity)
+        // TODO search for existing UPI?
+        val newIdentity = createAndSaveNewIdentity(identity, upi)
+        createActiveIdentityMap(newIdentity)
+        return newIdentity
+    }
+
+    fun activateIdentity(id: Long): Boolean {
+        val exists = identityRepository.existsByIdAndActiveIsFalseAndEndDateIsNull(id)
+        if(exists) {
+            val existingIdentity = identityRepository.findByIdAndActiveIsFalseAndEndDateIsNull(id)
+            val now = LocalDateTime.now()
+
+            retireExistingIdentity(existingIdentity, now)
+
+            val newIdentity = createNewIdentity(existingIdentity, existingIdentity.upi)
+            val activeIdentity : Identity = save(newIdentity)
+
+            val activatedMaps = updateIdentityMaps(activeIdentity, existingIdentity.id!!, now)
+
+            identityHubService.activateMappedActivities(activatedMaps)
+
+            return true
+        }
+
+        return false
+    }
+
+    fun deactivateIdentity(id: Long): Boolean {
+        val exists = identityRepository.existsByIdAndActiveIsTrue(id)
+        if(exists) {
+            val existingIdentity = identityRepository.findByIdAndActiveIsTrue(id)
+            val now = LocalDateTime.now()
+
+            retireExistingIdentity(existingIdentity, now)
+
+            val newIdentity = createNewIdentity(existingIdentity, false)
+            val activeIdentity : Identity = save(newIdentity)
+
+            val deactivatedMaps = updateIdentityMaps(activeIdentity, existingIdentity.id!!, now)
+
+            identityHubService.deactivateMappedActivities(deactivatedMaps)
+
+            return true
+        }
+
+        return false
+    }
+
+    private fun generateUPI(identity: Identity): String {
+        val lastName = identity.patientLast
+        val dob = identity.dateOfBirth
+        val gender = identity.gender
+
+        val combination = lastName + "/" + dob?.format(DATE_FORMATTER) + "/" + gender
+        return combination.hashCode().toString()
+    }
+
+    @Transactional
+    fun save(identityMap : IdentityMap): IdentityMap {
+        return identityMapRepository.save(identityMap)
+    }
+
+    @Transactional
+    fun saveAll(identityMaps : List<IdentityMap>): List<IdentityMap> {
+        return identityMapRepository.saveAll(identityMaps).toList()
+    }
+
+    @Transactional
+    fun save(identity : Identity): Identity {
+        return identityRepository.save(identity)
+    }
+
+    @Transactional
+    fun save(identityMapHistory : IdentityMapHistory) {
+        identityMapHistoryRepository.save(identityMapHistory)
+    }
+
+    private fun createAndSaveNewIdentity(identity: Identity, upi: String): Identity {
+        val newIdentity = createNewIdentity(identity, upi)
+        return save(newIdentity)
+    }
+
+    private fun createNewIdentity(identity: Identity, active: Boolean): Identity {
+        val newIdentity = createNewIdentity(identity, identity.upi)
+        newIdentity.active = active
+        return newIdentity
+    }
+
+    private fun createNewIdentity(identity: Identity, upi: String): Identity {
+        val newIdentity = Identity()
+        newIdentity.gender = identity.gender
+        newIdentity.patientLast = identity.patientLast
+        newIdentity.patientFirst = identity.patientFirst
+        newIdentity.dateOfBirth = identity.dateOfBirth
+        newIdentity.upi = upi
+        newIdentity.mrn = identity.mrn
+        newIdentity.active = true
+        newIdentity.createdBy = USER
+        newIdentity.endDate = null
+        newIdentity.modifiedBy = ""
+        newIdentity.createDate = LocalDateTime.now()
+        return newIdentity
+    }
+
+    private fun retireExistingIdentity(existingIdentity: Identity, now: LocalDateTime?) {
+        existingIdentity.endDate = now
+        existingIdentity.modifiedBy = USER
+        existingIdentity.active = false
+
+        save(existingIdentity)
+    }
+
     private fun createActiveIdentityMap(identity: Identity?): IdentityMap? {
         var result: IdentityMap? = null
 
@@ -124,79 +252,7 @@ class IdentityService(
         return result
     }
 
-    fun findActiveOrCreateNewIdentity(identity : Identity?): Identity? {
-        var result: Identity? = null
-
-        if(identity != null) {
-            val id = identity.id
-            if (id == null) {
-                val upi = generateUPI(identity)
-                // TODO Search for existing UPI?
-                result = createNewIdentity(identity, upi)
-            }
-            else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
-                result = identityRepository.findById(id).get()
-            }
-        }
-
-        return result
-    }
-
-    fun addIdentity(identity: Identity): Identity? {
-        val upi = generateUPI(identity)
-        // TODO search for existing UPI?
-        val newIdentity = createNewIdentity(identity, upi)
-        createActiveIdentityMap(newIdentity)
-        return newIdentity
-    }
-
-    private fun generateUPI(identity: Identity): String {
-        val lastName = identity.patientLast
-        val dob = identity.dateOfBirth
-        val gender = identity.gender
-
-        val combination = lastName + "/" + dob?.format(DATE_FORMATTER) + "/" + gender
-        return combination.hashCode().toString()
-    }
-
-    private fun createNewIdentity(identity: Identity, upi: String): Identity {
-        val newIdentity = Identity()
-        newIdentity.gender = identity.gender
-        newIdentity.patientLast = identity.patientLast
-        newIdentity.patientFirst = identity.patientFirst
-        newIdentity.dateOfBirth = identity.dateOfBirth
-        newIdentity.upi = upi
-        newIdentity.mrn = identity.mrn
-        newIdentity.active = true
-        newIdentity.createdBy = USER
-        newIdentity.endDate = null
-        newIdentity.modifiedBy = ""
-        newIdentity.createDate = LocalDateTime.now()
-
-        return save(newIdentity)
-    }
-
-    @Transactional
-    fun save(identityMap : IdentityMap): IdentityMap {
-        return identityMapRepository.save(identityMap)
-    }
-
-    @Transactional
-    fun saveAll(identityMaps : List<IdentityMap>) {
-        identityMapRepository.saveAll(identityMaps)
-    }
-
-    @Transactional
-    fun save(identity : Identity): Identity {
-        return identityRepository.save(identity)
-    }
-
-    @Transactional
-    fun save(identityMapHistory : IdentityMapHistory) {
-        identityMapHistoryRepository.save(identityMapHistory)
-    }
-
-    private fun updateIdentityMaps(activeIdentity: Identity, previousId: Long, eventTime: LocalDateTime) {
+    private fun updateIdentityMaps(activeIdentity: Identity, previousId: Long, eventTime: LocalDateTime): List<IdentityMap> {
         val identityMaps = identityMapRepository.findAllByIdentityId(previousId)
 
         for(identityMap in identityMaps) {
@@ -205,7 +261,7 @@ class IdentityService(
             identityMap.identity = activeIdentity
         }
 
-        saveAll(identityMaps)
+        return saveAll(identityMaps)
     }
 
     private fun createIdentityMapHistoryEntry(identityMapId: Long?, oldIdentityId: Long?, newIdentityId: Long?, eventTime: LocalDateTime?, event: String) {

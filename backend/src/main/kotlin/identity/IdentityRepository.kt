@@ -7,4 +7,6 @@ interface IdentityRepository : CrudRepository<Identity, Long> {
     fun findByIdAndActiveIsTrue(id: Long) : Identity
     fun findAllByOrderByIdAsc() : List<Identity>
     fun findByActiveIsTrueOrderByPatientLastAsc(): List<Identity>
+    fun existsByIdAndActiveIsFalseAndEndDateIsNull(id: Long) : Boolean
+    fun findByIdAndActiveIsFalseAndEndDateIsNull(id: Long) : Identity
 }

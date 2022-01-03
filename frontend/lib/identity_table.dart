@@ -57,6 +57,7 @@ class IdentityTableState extends State<IdentityTable> {
         createCell(identity.createdBy),
         createCell(identity.modifiedBy),
         _createEditCell(identity),
+        _createActivateCell(identity),
       ]);
     }).toList();
 
@@ -70,7 +71,8 @@ class IdentityTableState extends State<IdentityTable> {
         5: FixedColumnWidth(120),
         6: FixedColumnWidth(70),
         7: FixedColumnWidth(60),
-        12: FixedColumnWidth(40)
+        12: FixedColumnWidth(40),
+        13: FixedColumnWidth(40),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
@@ -93,6 +95,7 @@ class IdentityTableState extends State<IdentityTable> {
         createHeader("Created By"),
         createHeader("Modified By"),
         createHeader("Edit"),
+        createHeader("")
       ],
     );
   }
@@ -117,6 +120,49 @@ class IdentityTableState extends State<IdentityTable> {
                       _showEditModal(context, identity);
                     }
                   : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  TableCell _createActivateCell(Identity identity) {
+    Widget _icon = const Text("");
+    if (identity.active && identity.endDate == null) {
+      _icon = const Icon(Icons.cancel, color: Colors.red, size: 22.0);
+    } else if (!identity.active && identity.endDate == null) {
+      _icon = const Icon(Icons.check_circle, color: Colors.green, size: 22.0);
+    }
+
+    GestureTapCallback? _callback;
+    if (identity.active && identity.endDate == null) {
+      _callback = () {
+        _deactivateIdentity(identity).then((success) {
+          if (success) {
+            widget.refreshIdentity();
+          }
+        });
+      };
+    } else if (!identity.active && identity.endDate == null) {
+      _callback = () {
+        _activateIdentity(identity).then((success) {
+          if (success) {
+            widget.refreshIdentity();
+          }
+        });
+      };
+    }
+
+    return TableCell(
+      child: SizedBox(
+        height: 24,
+        child: Center(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              child: _icon,
+              onTap: _callback,
             ),
           ),
         ),
@@ -255,6 +301,30 @@ class IdentityTableState extends State<IdentityTable> {
     setState(() {
       _futureIdentities = _fetchIdentities();
     });
+  }
+
+  Future<bool> _deactivateIdentity(Identity identity) async {
+    http.Response response = await http.put(Uri.http('localhost:8080', 'api/identities/deactivate/' + identity.id.toString()), headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    });
+
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to deactivate identity');
+    }
+  }
+
+  Future<bool> _activateIdentity(Identity identity) async {
+    http.Response response = await http.put(Uri.http('localhost:8080', 'api/identities/activate/' + identity.id.toString()), headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    });
+
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to activate identity');
+    }
   }
 
   Future<List<Identity>> _fetchIdentities() async {

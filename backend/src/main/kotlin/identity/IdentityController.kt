@@ -15,6 +15,18 @@ class IdentityController(
         return ResponseEntity(identities, HttpStatus.OK)
     }
 
+    @PutMapping("/identities/activate/{id}")
+    fun activateIdentity(@PathVariable id: Long): ResponseEntity<Boolean> {
+        val activated = identityService.activateIdentity(id)
+        return ResponseEntity(activated, HttpStatus.OK)
+    }
+
+    @PutMapping("/identities/deactivate/{id}")
+    fun deactivateIdentity(@PathVariable id: Long): ResponseEntity<Boolean> {
+        val deactivated = identityService.deactivateIdentity(id)
+        return ResponseEntity(deactivated, HttpStatus.OK)
+    }
+
     @GetMapping("/identities/active")
     fun activeIdentities(): ResponseEntity<List<Identity>> {
         val identities = identityService.getActiveIdentities()

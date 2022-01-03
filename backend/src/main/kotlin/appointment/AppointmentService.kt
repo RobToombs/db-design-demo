@@ -1,21 +1,18 @@
 package com.toombs.backend.appointment
 
-import com.toombs.backend.identity.IdentityService
+import com.toombs.backend.identity.IdentityMap
 import org.springframework.stereotype.Service
 import javax.transaction.Transactional
 
 @Service
 class AppointmentService(
-    private val appointmentRepository: AppointmentRepository,
-    private val identityService: IdentityService,
+    private val appointmentRepository: AppointmentRepository
 ) {
     fun getAppointments() : List<Appointment> {
         return appointmentRepository.findAllByOrderByIdAsc()
     }
 
-    fun addAppointment(newAppt: Appointment) : Appointment {
-        val identityMap = identityService.findOrCreateActiveIdentityMap(newAppt.identityMap)
-
+    fun addAppointment(newAppt: Appointment, identityMap: IdentityMap?) : Appointment {
         val appt = Appointment()
         appt.date = newAppt.date
         appt.medication = newAppt.medication
@@ -38,6 +35,16 @@ class AppointmentService(
         }
 
         return false
+    }
+
+    @Transactional
+    fun activate(mapIds: List<Long>) {
+        appointmentRepository.activate(mapIds)
+    }
+
+    @Transactional
+    fun deactivate(mapIds: List<Long>) {
+        appointmentRepository.deactivate(mapIds)
     }
 
     @Transactional

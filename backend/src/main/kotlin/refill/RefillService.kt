@@ -1,21 +1,18 @@
 package com.toombs.backend.refill
 
-import com.toombs.backend.identity.IdentityService
+import com.toombs.backend.identity.IdentityMap
 import org.springframework.stereotype.Service
 import javax.transaction.Transactional
 
 @Service
 class RefillService(
-    private val refillRepository: RefillRepository,
-    private val identityService: IdentityService,
+    private val refillRepository: RefillRepository
 ) {
     fun getRefills() : List<Refill> {
         return refillRepository.findAllByOrderByIdAsc()
     }
 
-    fun addRefill(newRefill: Refill) : Refill {
-        val identityMap = identityService.findOrCreateActiveIdentityMap(newRefill.identityMap)
-
+    fun addRefill(newRefill: Refill, identityMap: IdentityMap?) : Refill {
         val refill = Refill()
         refill.date = newRefill.date
         refill.medication = newRefill.medication
@@ -39,6 +36,16 @@ class RefillService(
         }
 
         return false
+    }
+
+    @Transactional
+    fun activate(mapIds: List<Long>) {
+        refillRepository.activate(mapIds)
+    }
+
+    @Transactional
+    fun deactivate(mapIds: List<Long>) {
+        refillRepository.deactivate(mapIds)
     }
 
     @Transactional

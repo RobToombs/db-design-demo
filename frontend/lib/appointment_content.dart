@@ -114,7 +114,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
         createHeader("Active"),
         createHeader("Map Id"),
         createHeader("Final Identity Id"),
-        createHeader("Finish"),
+        createHeader("Save"),
       ],
     );
   }

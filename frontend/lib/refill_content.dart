@@ -117,7 +117,7 @@ class _RefillTableState extends State<RefillTable> {
         createHeader("Active"),
         createHeader("Map Id"),
         createHeader("Final Identity Id"),
-        createHeader("Finish")
+        createHeader("Save")
       ],
     );
   }
