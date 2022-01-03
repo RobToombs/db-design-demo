@@ -1,8 +1,8 @@
 package com.toombs.backend.refill
 
-import com.toombs.backend.appointment.Appointment
 import com.toombs.backend.identity.IdentityService
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 @Service
 class RefillService(
@@ -10,7 +10,7 @@ class RefillService(
     private val identityService: IdentityService,
 ) {
     fun getRefills() : List<Refill> {
-        return refillRepository.findAll().toList()
+        return refillRepository.findAllByOrderByIdAsc()
     }
 
     fun addRefill(newRefill: Refill) : Refill {
@@ -25,7 +25,24 @@ class RefillService(
         return save(refill)
     }
 
-    private fun save(refill: Refill): Refill {
+    fun finishRefill(id: Long): Boolean {
+        val exists = refillRepository.existsById(id)
+        if(exists) {
+            val refill = refillRepository.findById(id).get()
+            if(refill.active) {
+                refill.active = false
+                refill.finalIdentity = refill.identityMap?.identity
+                save(refill)
+
+                return true
+            }
+        }
+
+        return false
+    }
+
+    @Transactional
+    fun save(refill: Refill): Refill {
         return refillRepository.save(refill)
     }
 }

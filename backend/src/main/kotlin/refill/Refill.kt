@@ -1,6 +1,7 @@
 package com.toombs.backend.refill
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.toombs.backend.identity.Identity
 import com.toombs.backend.identity.IdentityMap
 import java.time.LocalDate
 import javax.persistence.*
@@ -10,6 +11,10 @@ data class Refill(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = true)
+    @JoinColumn(name = "identity_id")
+    var finalIdentity: Identity? = null,
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)
     @JoinColumn(name = "identity_map_id")
@@ -21,4 +26,6 @@ data class Refill(
     var callAttempts: Int = 0,
 
     var medication: String = "",
+
+    var active: Boolean = true,
 )

@@ -43,17 +43,28 @@ class _RefillTableState extends State<RefillTable> {
 
   Widget _refillTable(List<Refill> refills) {
     List<TableRow> refillRows = refills.map<TableRow>((Refill refill) {
+      String _upi = refill.finalIdentity == null ? refill.identityMap.identity.upi : refill.finalIdentity!.upi;
+      String _mrn = refill.finalIdentity == null ? refill.identityMap.identity.mrn : refill.finalIdentity!.mrn;
+      String _patientLast = refill.finalIdentity == null ? refill.identityMap.identity.patientLast : refill.finalIdentity!.patientLast;
+      String _patientFirst = refill.finalIdentity == null ? refill.identityMap.identity.patientFirst : refill.finalIdentity!.patientFirst;
+      DateTime _dob = refill.finalIdentity == null ? refill.identityMap.identity.dateOfBirth : refill.finalIdentity!.dateOfBirth;
+      String _gender = refill.finalIdentity == null ? refill.identityMap.identity.gender : refill.finalIdentity!.gender;
+
       return TableRow(children: <Widget>[
         createCell(refill.id.toString()),
         createCell(formatDate(refill.date)),
         createCell(refill.medication),
         createCell(refill.callAttempts.toString()),
-        createCell(refill.identityMap.identity.upi),
-        createCell(refill.identityMap.identity.mrn),
-        createCell(refill.identityMap.identity.patientLast),
-        createCell(refill.identityMap.identity.patientFirst),
-        createCell(formatDate(refill.identityMap.identity.dateOfBirth)),
-        createCell(refill.identityMap.identity.gender),
+        createCell(_upi),
+        createCell(_mrn),
+        createCell(_patientLast),
+        createCell(_patientFirst),
+        createCell(formatDate(_dob)),
+        createCell(_gender),
+        createCell(refill.active.toString()),
+        createCell(refill.identityMap.id.toString()),
+        createCell(refill.finalIdentity == null ? "" : refill.finalIdentity!.id.toString()),
+        _createFinishCell(refill),
       ]);
     }).toList();
 
@@ -68,6 +79,10 @@ class _RefillTableState extends State<RefillTable> {
         3: FixedColumnWidth(110),
         8: FixedColumnWidth(120),
         9: FixedColumnWidth(70),
+        10: FixedColumnWidth(60),
+        11: FixedColumnWidth(80),
+        12: FixedColumnWidth(120),
+        13: FixedColumnWidth(50),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
@@ -99,7 +114,43 @@ class _RefillTableState extends State<RefillTable> {
         createHeader("First"),
         createHeader("DOB"),
         createHeader("Gender"),
+        createHeader("Active"),
+        createHeader("Map Id"),
+        createHeader("Final Identity Id"),
+        createHeader("Finish")
       ],
+    );
+  }
+
+  // TODO make this generic w/ Appointment content
+  TableCell _createFinishCell(Refill refill) {
+    return TableCell(
+      child: SizedBox(
+        height: 24,
+        child: Center(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              child: refill.active
+                  ? const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 22.0,
+                    )
+                  : const Text(""),
+              onTap: refill.active
+                  ? () {
+                      _finishRefill(refill).then((success) {
+                        if (success) {
+                          _refresh();
+                        }
+                      });
+                    }
+                  : null,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -121,6 +172,18 @@ class _RefillTableState extends State<RefillTable> {
     setState(() {
       _futureRefills = _fetchRefills();
     });
+  }
+
+  Future<bool> _finishRefill(Refill refill) async {
+    http.Response response = await http.put(Uri.http('localhost:8080', 'api/refills/finish/' + refill.id.toString()), headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    });
+
+    if (response.statusCode == html.HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to finish refill');
+    }
   }
 
   Future<List<Refill>> _fetchRefills() async {
@@ -259,7 +322,9 @@ class _AddRefillDialogContentState extends State<AddRefillDialogContent> {
 
                       Refill refill = Refill(
                         id: null,
+                        finalIdentity: null,
                         identityMap: identMap,
+                        active: true,
                         date: _date!,
                         medication: _medication,
                         callAttempts: 0,

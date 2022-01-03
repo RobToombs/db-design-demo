@@ -22,4 +22,9 @@ class RefillController(
         return ResponseEntity(true, HttpStatus.CREATED)
     }
 
+    @PutMapping("/refills/finish/{id}")
+    fun finishRefill(@PathVariable id: Long): ResponseEntity<Boolean> {
+        val finished = refillService.finishRefill(id)
+        return ResponseEntity(finished, HttpStatus.OK)
+    }
 }

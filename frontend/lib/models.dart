@@ -118,13 +118,17 @@ class IdentityMapHistory {
 
 class Appointment {
   int? id;
+  Identity? finalIdentity;
   IdentityMap identityMap;
+  bool active;
   DateTime date;
   String medication;
 
   Appointment({
     required this.id,
+    required this.finalIdentity,
     required this.identityMap,
+    required this.active,
     required this.date,
     required this.medication,
   });
@@ -132,7 +136,9 @@ class Appointment {
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(
       id: json['id'] as int,
+      finalIdentity: json['finalIdentity'] == null ? null : Identity.fromJson(json['finalIdentity']),
       identityMap: IdentityMap.fromJson(json['identityMap']),
+      active: json['active'] as bool,
       date: DateTime.parse(json['date']),
       medication: json['medication'] as String,
     );
@@ -148,14 +154,18 @@ class Appointment {
 
 class Refill {
   int? id;
+  Identity? finalIdentity;
   IdentityMap identityMap;
+  bool active;
   DateTime date;
   int callAttempts;
   String medication;
 
   Refill({
     required this.id,
+    required this.finalIdentity,
     required this.identityMap,
+    required this.active,
     required this.date,
     required this.callAttempts,
     required this.medication,
@@ -164,7 +174,9 @@ class Refill {
   factory Refill.fromJson(Map<String, dynamic> json) {
     return Refill(
       id: json['id'] as int,
+      finalIdentity: json['finalIdentity'] == null ? null : Identity.fromJson(json['finalIdentity']),
       identityMap: IdentityMap.fromJson(json['identityMap']),
+      active: json['active'] as bool,
       date: DateTime.parse(json['date']),
       callAttempts: json['callAttempts'] as int,
       medication: json['medication'] as String,

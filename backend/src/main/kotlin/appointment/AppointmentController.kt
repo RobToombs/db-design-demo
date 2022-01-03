@@ -21,4 +21,10 @@ class AppointmentController (
         appointmentService.addAppointment(appointment)
         return ResponseEntity(true, HttpStatus.CREATED)
     }
+
+    @PutMapping("/appointments/finish/{id}")
+    fun finishAppointment(@PathVariable id: Long): ResponseEntity<Boolean> {
+        val finished = appointmentService.finishAppointment(id)
+        return ResponseEntity(finished, HttpStatus.OK)
+    }
 }

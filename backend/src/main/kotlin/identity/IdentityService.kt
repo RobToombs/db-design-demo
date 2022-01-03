@@ -1,7 +1,6 @@
 package com.toombs.backend.identity
 
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.transaction.Transactional
@@ -19,6 +18,7 @@ class IdentityService(
     private val MERGE = "MERGE"
     private val UPDATE = "UPDATE"
     private val CREATE = "CREATE"
+    private val DEACTIVATED = "DEACTIVATED"
 
     fun getIdentities(): List<Identity> {
         return identityRepository.findAllByOrderByIdAsc()

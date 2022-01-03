@@ -1,6 +1,7 @@
 package com.toombs.backend.appointment
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.toombs.backend.identity.Identity
 import com.toombs.backend.identity.IdentityMap
 import java.time.LocalDate
 import javax.persistence.*
@@ -11,6 +12,10 @@ data class Appointment(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = true)
+    @JoinColumn(name = "identity_id")
+    var finalIdentity: Identity? = null,
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)
     @JoinColumn(name = "identity_map_id")
     var identityMap: IdentityMap? = null,
@@ -19,4 +24,6 @@ data class Appointment(
     var date: LocalDate? = null,
 
     var medication: String = "",
+
+    var active: Boolean = true,
 )

@@ -43,16 +43,27 @@ class _AppointmentTableState extends State<AppointmentTable> {
 
   Widget _appointmentTable(List<Appointment> appointments) {
     List<TableRow> appointmentRows = appointments.map<TableRow>((Appointment appointment) {
+      String _upi = appointment.finalIdentity == null ? appointment.identityMap.identity.upi : appointment.finalIdentity!.upi;
+      String _mrn = appointment.finalIdentity == null ? appointment.identityMap.identity.mrn : appointment.finalIdentity!.mrn;
+      String _patientLast = appointment.finalIdentity == null ? appointment.identityMap.identity.patientLast : appointment.finalIdentity!.patientLast;
+      String _patientFirst = appointment.finalIdentity == null ? appointment.identityMap.identity.patientFirst : appointment.finalIdentity!.patientFirst;
+      DateTime _dob = appointment.finalIdentity == null ? appointment.identityMap.identity.dateOfBirth : appointment.finalIdentity!.dateOfBirth;
+      String _gender = appointment.finalIdentity == null ? appointment.identityMap.identity.gender : appointment.finalIdentity!.gender;
+
       return TableRow(children: <Widget>[
         createCell(appointment.id.toString()),
         createCell(formatDate(appointment.date)),
         createCell(appointment.medication),
-        createCell(appointment.identityMap.identity.upi),
-        createCell(appointment.identityMap.identity.mrn),
-        createCell(appointment.identityMap.identity.patientLast),
-        createCell(appointment.identityMap.identity.patientFirst),
-        createCell(formatDate(appointment.identityMap.identity.dateOfBirth)),
-        createCell(appointment.identityMap.identity.gender),
+        createCell(_upi),
+        createCell(_mrn),
+        createCell(_patientLast),
+        createCell(_patientFirst),
+        createCell(formatDate(_dob)),
+        createCell(_gender),
+        createCell(appointment.active.toString()),
+        createCell(appointment.identityMap.id.toString()),
+        createCell(appointment.finalIdentity == null ? "" : appointment.finalIdentity!.id.toString()),
+        _createFinishCell(appointment),
       ]);
     }).toList();
 
@@ -66,6 +77,10 @@ class _AppointmentTableState extends State<AppointmentTable> {
         1: FixedColumnWidth(120),
         7: FixedColumnWidth(120),
         8: FixedColumnWidth(70),
+        9: FixedColumnWidth(60),
+        10: FixedColumnWidth(80),
+        11: FixedColumnWidth(120),
+        12: FixedColumnWidth(50),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
@@ -96,6 +111,10 @@ class _AppointmentTableState extends State<AppointmentTable> {
         createHeader("First"),
         createHeader("DOB"),
         createHeader("Gender"),
+        createHeader("Active"),
+        createHeader("Map Id"),
+        createHeader("Final Identity Id"),
+        createHeader("Finish"),
       ],
     );
   }
@@ -104,6 +123,38 @@ class _AppointmentTableState extends State<AppointmentTable> {
   void initState() {
     super.initState();
     _futureAppointments = _fetchAppointments();
+  }
+
+  // TODO make this generic w/ Refill content
+  TableCell _createFinishCell(Appointment appointment) {
+    return TableCell(
+      child: SizedBox(
+        height: 24,
+        child: Center(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              child: appointment.active
+                  ? const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 22.0,
+                    )
+                  : const Text(""),
+              onTap: appointment.active
+                  ? () {
+                      _finishAppointment(appointment).then((success) {
+                        if (success) {
+                          _refresh();
+                        }
+                      });
+                    }
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showAddModal(context) {
@@ -119,6 +170,18 @@ class _AppointmentTableState extends State<AppointmentTable> {
     setState(() {
       _futureAppointments = _fetchAppointments();
     });
+  }
+
+  Future<bool> _finishAppointment(Appointment appointment) async {
+    http.Response response = await http.put(Uri.http('localhost:8080', 'api/appointments/finish/' + appointment.id.toString()), headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    });
+
+    if (response.statusCode == html.HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to finish appointment');
+    }
   }
 
   Future<List<Appointment>> _fetchAppointments() async {
@@ -256,7 +319,9 @@ class _AddAppointmentDialogContentState extends State<AddAppointmentDialogConten
 
                       Appointment appt = Appointment(
                         id: null,
+                        finalIdentity: null,
                         identityMap: identMap,
+                        active: true,
                         date: _date!,
                         medication: _medication,
                       );
