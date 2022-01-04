@@ -38,18 +38,43 @@ class RefillService(
         return false
     }
 
-    @Transactional
-    fun activate(mapIds: List<Long>) {
-        refillRepository.activate(mapIds)
+    fun activate(identityMaps: List<IdentityMap>) {
+        val mapIds = identityMaps
+            .mapNotNull { it.id }
+            .toList()
+        val identityIds = identityMaps
+            .mapNotNull { it.identity }
+            .mapNotNull { it.id }
+            .toList()
+
+        val refills = refillRepository.findDeactive(mapIds, identityIds)
+        for(refill in refills) {
+            refill.active = true
+            refill.finalIdentity = null
+        }
+        save(refills)
     }
 
-    @Transactional
-    fun deactivate(mapIds: List<Long>) {
-        refillRepository.deactivate(mapIds)
+    fun deactivate(identityMaps: List<IdentityMap>) {
+        val mapIds = identityMaps
+            .mapNotNull { it.id }
+            .toList()
+
+        val refills = refillRepository.findActive(mapIds)
+        for(refill in refills) {
+            refill.active = false
+            refill.finalIdentity = refill.identityMap?.identity
+        }
+        save(refills)
     }
 
     @Transactional
     fun save(refill: Refill): Refill {
         return refillRepository.save(refill)
+    }
+
+    @Transactional
+    fun save(refills: List<Refill>): List<Refill> {
+        return refillRepository.saveAll(refills).toList()
     }
 }

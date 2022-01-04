@@ -1,6 +1,5 @@
 package com.toombs.backend.appointment
 
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 
@@ -8,20 +7,15 @@ import org.springframework.data.repository.CrudRepository
 interface AppointmentRepository : CrudRepository<Appointment, Long> {
     fun findAllByOrderByIdAsc() : List<Appointment>
 
-    @Modifying
-    @Query(value = "UPDATE appointment a " +
-            "SET active = true, identity_id = null " +
-            "FROM identity_map im " +
-            "WHERE a.identity_map_id in :mapIds",
+    @Query("SELECT * FROM appointment a " +
+            "JOIN identity_map im ON a.identity_map_id = im.id " +
+            "WHERE a.active = FALSE AND im.id IN :mapIds AND a.identity_id IN :identityIds",
         nativeQuery = true)
-    fun activate(mapIds: List<Long>)
+    fun findDeactive(mapIds: List<Long>, identityIds: List<Long>): List<Appointment>
 
-    @Modifying
-    @Query(value = "UPDATE appointment a " +
-            "SET active = false, identity_id = i.id " +
-            "FROM identity_map im " +
-            "JOIN identity i ON im.identity_id = i.id " +
-            "WHERE a.identity_map_id in :mapIds",
+    @Query("SELECT * FROM appointment a " +
+            "JOIN identity_map im ON a.identity_map_id = im.id " +
+            "WHERE a.active = TRUE AND im.id IN :mapIds",
         nativeQuery = true)
-    fun deactivate(mapIds: List<Long>)
+    fun findActive(mapIds: List<Long>): List<Appointment>
 }

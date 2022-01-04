@@ -37,18 +37,43 @@ class AppointmentService(
         return false
     }
 
-    @Transactional
-    fun activate(mapIds: List<Long>) {
-        appointmentRepository.activate(mapIds)
+    fun activate(identityMaps: List<IdentityMap>) {
+        val mapIds = identityMaps
+            .mapNotNull { it.id }
+            .toList()
+        val identityIds = identityMaps
+            .mapNotNull { it.identity }
+            .mapNotNull { it.id }
+            .toList()
+
+        val appts = appointmentRepository.findDeactive(mapIds, identityIds)
+        for(appt in appts) {
+            appt.active = true
+            appt.finalIdentity = null
+        }
+        save(appts)
     }
 
-    @Transactional
-    fun deactivate(mapIds: List<Long>) {
-        appointmentRepository.deactivate(mapIds)
+    fun deactivate(identityMaps: List<IdentityMap>) {
+        val mapIds = identityMaps
+            .mapNotNull { it.id }
+            .toList()
+
+        val appts = appointmentRepository.findActive(mapIds)
+        for(appt in appts) {
+            appt.active = false
+            appt.finalIdentity = appt.identityMap?.identity
+        }
+        save(appts)
     }
 
     @Transactional
     fun save(appointment: Appointment): Appointment {
         return appointmentRepository.save(appointment)
+    }
+
+    @Transactional
+    fun save(appointments: List<Appointment>): List<Appointment> {
+        return appointmentRepository.saveAll(appointments).toList()
     }
 }

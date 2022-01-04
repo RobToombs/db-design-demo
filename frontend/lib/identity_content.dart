@@ -28,8 +28,12 @@ class IdentityContent extends StatelessWidget {
       ),
     );
 
+    ListView listView = ListView(
+      children: [tables],
+    );
+
     Scaffold content = Scaffold(
-      body: tables,
+      body: listView,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showAddModal(context);

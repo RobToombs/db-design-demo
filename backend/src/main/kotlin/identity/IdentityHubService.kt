@@ -11,21 +11,13 @@ class IdentityHubService(
 ) {
 
     fun activateMappedActivities(mappings: List<IdentityMap>) {
-        val mapIds: List<Long> = mappings
-            .mapNotNull { it.id }
-            .toList()
-
-        appointmentService.activate(mapIds)
-        refillService.activate(mapIds)
+        appointmentService.activate(mappings)
+        refillService.activate(mappings)
     }
 
     fun deactivateMappedActivities(mappings: List<IdentityMap>) {
-        val mapIds: List<Long> = mappings
-            .mapNotNull { it.id }
-            .toList()
-
-        appointmentService.deactivate(mapIds)
-        refillService.deactivate(mapIds)
+        appointmentService.deactivate(mappings)
+        refillService.deactivate(mappings)
     }
 
 }
