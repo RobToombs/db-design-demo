@@ -57,7 +57,6 @@ class Identity {
         'active': active,
         'createDate': createDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(createDate!),
         'endDate': endDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(endDate!),
-        'createdBy': createdBy,
         'modifiedBy': modifiedBy,
       };
 }
@@ -90,7 +89,6 @@ class IdentityMapHistory {
   int identityMapId;
   int? oldIdentityId;
   int newIdentityId;
-  String createdBy;
   String event;
 
   IdentityMapHistory({
@@ -99,7 +97,6 @@ class IdentityMapHistory {
     required this.identityMapId,
     required this.oldIdentityId,
     required this.newIdentityId,
-    required this.createdBy,
     required this.event,
   });
 
@@ -110,7 +107,6 @@ class IdentityMapHistory {
       identityMapId: json['identityMapId'] as int,
       oldIdentityId: json['oldIdentityId'] == null ? null : json['oldIdentityId'] as int,
       newIdentityId: json['newIdentityId'] as int,
-      createdBy: json['createdBy'] as String,
       event: json['event'] as String,
     );
   }

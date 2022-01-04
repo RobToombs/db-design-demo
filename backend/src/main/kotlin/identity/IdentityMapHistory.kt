@@ -22,7 +22,5 @@ data class IdentityMapHistory(
 
     var newIdentityId: Long? = null,
 
-    var createdBy: String = "",
-
     var event: String = "",
 )

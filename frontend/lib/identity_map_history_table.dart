@@ -22,7 +22,9 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
     return Center(
       child: Column(
         children: [
-          const Padding(padding: EdgeInsets.only(top: 40.0, bottom: 10.0), child: Text("Identity Map History", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+          const Padding(
+              padding: EdgeInsets.only(top: 40.0, bottom: 10.0),
+              child: Text("Identity Map History", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
           FutureBuilder<List<IdentityMapHistory>>(
               future: _futureIdentityMapHistories,
               builder: (context, snapshot) {
@@ -47,7 +49,6 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
         createCell(identityMapHistory.identityMapId.toString()),
         createCell(identityMapHistory.oldIdentityId.toString()),
         createCell(identityMapHistory.newIdentityId.toString()),
-        createCell(identityMapHistory.createdBy),
         createCell(identityMapHistory.event),
       ]);
     }).toList();
@@ -63,8 +64,7 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
         2: FixedColumnWidth(120),
         3: FixedColumnWidth(120),
         4: FixedColumnWidth(120),
-        5: FixedColumnWidth(200),
-        6: FixedColumnWidth(120),
+        5: FixedColumnWidth(120),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
@@ -79,7 +79,6 @@ class IdentityMapHistoryTableState extends State<IdentityMapHistoryTable> {
         createHeader("Identity Map Id"),
         createHeader("Old Identity Id"),
         createHeader("New Identity Id"),
-        createHeader("Created By"),
         createHeader("Event"),
       ],
     );

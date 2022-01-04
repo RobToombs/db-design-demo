@@ -72,7 +72,10 @@ class IdentityService(
         val newIdentity = identityRepository.findByIdAndActiveIsTrue(newIdentityId)
         val identityMap = identityMapRepository.findById(id).get()
 
-        createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, newIdentity.id, LocalDateTime.now(), MERGE)
+        val now = LocalDateTime.now()
+
+        retireExistingIdentity(identityMap.identity!!, now)
+        createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, newIdentity.id, now, MERGE)
 
         identityMap.identity = newIdentity
 
@@ -270,7 +273,6 @@ class IdentityService(
         history.oldIdentityId = oldIdentityId
         history.newIdentityId = newIdentityId
         history.createDate = eventTime
-        history.createdBy = USER
         history.event = event
 
         save(history)

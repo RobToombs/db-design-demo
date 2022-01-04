@@ -6,8 +6,8 @@ INSERT INTO identity (id, upi, mrn, patient_last, patient_first, date_of_birth, 
 INSERT INTO identity_map (id, identity_id) VALUES (1, 1);
 INSERT INTO identity_map (id, identity_id) VALUES (2, 2);
 
-INSERT INTO identity_map_history (id, create_date, created_by, event, identity_map_id, new_identity_id, old_identity_id) VALUES (1, now(), 'dani@shieldsrx.com', 'CREATE', 1, 1, null);
-INSERT INTO identity_map_history (id, create_date, created_by, event, identity_map_id, new_identity_id, old_identity_id) VALUES (2, now(), 'stella@shieldsrx.com', 'CREATE', 2, 2, null);
+INSERT INTO identity_map_history (id, create_date, event, identity_map_id, new_identity_id, old_identity_id) VALUES (1, now(), 'CREATE', 1, 1, null);
+INSERT INTO identity_map_history (id, create_date, event, identity_map_id, new_identity_id, old_identity_id) VALUES (2, now(), 'CREATE', 2, 2, null);
 
 INSERT INTO appointment (id, identity_map_id, date, medication, active) VALUES (1, 1, '2021-12-24 07:30:00', 'Coffee', true);
 INSERT INTO appointment (id, identity_map_id, date, medication, active) VALUES (2, 2, '2021-12-25 09:00:00', 'Apples', true);

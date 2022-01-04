@@ -28,7 +28,6 @@ create table identity_map_history (
       identity_map_id   BIGINT NOT NULL,
       old_identity_id   BIGINT DEFAULT NULL,
       new_identity_id   BIGINT NOT NULL,
-      created_by        TEXT NOT NULL DEFAULT '',
       event             TEXT NOT NULL DEFAULT ''
 );
 
