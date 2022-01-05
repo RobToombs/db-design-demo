@@ -6,6 +6,7 @@ import com.toombs.backend.identity.repositories.IdentityRepository
 import com.toombs.backend.identity.entities.Identity
 import com.toombs.backend.identity.entities.IdentityMap
 import com.toombs.backend.identity.entities.IdentityMapHistory
+import com.toombs.backend.identity.entities.Phone
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -46,6 +47,7 @@ class IdentityService(
             || existingIdentity.mrn != updatedIdentity.mrn
             || existingIdentity.gender != updatedIdentity.gender
             || existingIdentity.dateOfBirth != updatedIdentity.dateOfBirth
+            || anyPhoneNumbersUpdated(existingIdentity, updatedIdentity)
         ) {
             val now = LocalDateTime.now()
 
@@ -59,6 +61,19 @@ class IdentityService(
             return true
         }
 
+        return false
+    }
+
+    // TODO If logic is added to add/delete phone numbers, this method would need to be updated
+    private fun anyPhoneNumbersUpdated(existingIdentity: Identity, updatedIdentity: Identity): Boolean {
+        for (i in 0..existingIdentity.phones.size) {
+            val existing = existingIdentity.phones[i]
+            val updated = updatedIdentity.phones[i]
+
+            if(existing != updated) {
+                return true
+            }
+        }
         return false
     }
 
@@ -233,6 +248,14 @@ class IdentityService(
         newIdentity.endDate = null
         newIdentity.modifiedBy = ""
         newIdentity.createDate = LocalDateTime.now()
+
+        for(phone in identity.phones) {
+            val newPhone = Phone()
+            newPhone.number = phone.number
+            newPhone.type = phone.type
+            newIdentity.addPhone(newPhone)
+        }
+
         return newIdentity
     }
 

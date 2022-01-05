@@ -90,7 +90,7 @@ class Phone {
   factory Phone.fromJson(Map<String, dynamic> json) {
     return Phone(
       id: json['id'] as int,
-      identityId: json['identityId'] as int,
+      identityId: json['identity'] as int,
       number: json['number'],
       type: json['type'],
     );
@@ -98,7 +98,6 @@ class Phone {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'identityId': identityId,
         'number': number.toString(),
         'type': type.toString(),
       };
@@ -118,14 +117,13 @@ class MrnOverflow {
   factory MrnOverflow.fromJson(Map<String, dynamic> json) {
     return MrnOverflow(
       id: json['id'] as int,
-      identityId: json['identityId'] as int,
+      identityId: json['identity'] as int,
       mrn: json['mrn'],
     );
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'identityId': identityId.toString(),
         'mrn': mrn.toString(),
       };
 }

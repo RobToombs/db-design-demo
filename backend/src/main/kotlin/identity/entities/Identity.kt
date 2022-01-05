@@ -36,9 +36,14 @@ data class Identity(
 
     var modifiedBy: String = "",
 
-    @OneToMany(mappedBy = "identityId", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-    var phones: List<Phone> = ArrayList(),
+    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    var phones: MutableList<Phone> = mutableListOf(),
 
-    @OneToMany(mappedBy = "identityId", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-    var mrnOverflow: List<MrnOverflow> = ArrayList(),
-)
+    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    var mrnOverflow: MutableList<MrnOverflow> = mutableListOf(),
+) {
+    fun addPhone(phone: Phone) {
+        phone.identity = this
+        phones.add(phone)
+    }
+}
