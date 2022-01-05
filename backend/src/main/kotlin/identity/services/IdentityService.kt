@@ -1,5 +1,11 @@
-package com.toombs.backend.identity
+package com.toombs.backend.identity.services
 
+import com.toombs.backend.identity.repositories.IdentityMapHistoryRepository
+import com.toombs.backend.identity.repositories.IdentityMapRepository
+import com.toombs.backend.identity.repositories.IdentityRepository
+import com.toombs.backend.identity.entities.Identity
+import com.toombs.backend.identity.entities.IdentityMap
+import com.toombs.backend.identity.entities.IdentityMapHistory
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

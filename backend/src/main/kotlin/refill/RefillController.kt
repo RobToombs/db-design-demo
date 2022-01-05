@@ -1,6 +1,6 @@
 package com.toombs.backend.refill
 
-import com.toombs.backend.identity.IdentityService
+import com.toombs.backend.identity.services.IdentityService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

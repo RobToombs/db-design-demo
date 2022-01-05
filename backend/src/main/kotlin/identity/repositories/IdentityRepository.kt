@@ -1,5 +1,6 @@
-package com.toombs.backend.identity
+package com.toombs.backend.identity.repositories
 
+import com.toombs.backend.identity.entities.Identity
 import org.springframework.data.repository.CrudRepository
 
 interface IdentityRepository : CrudRepository<Identity, Long> {

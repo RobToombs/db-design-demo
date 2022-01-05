@@ -1,4 +1,4 @@
-package com.toombs.backend.identity
+package com.toombs.backend.identity.entities
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
@@ -35,4 +35,10 @@ data class Identity(
     var createdBy: String = "",
 
     var modifiedBy: String = "",
+
+    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    var phones: List<Phone> = ArrayList(),
+
+    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    var mrnOverflow: List<MrnOverflow> = ArrayList(),
 )

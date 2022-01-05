@@ -1,5 +1,9 @@
 package com.toombs.backend.identity
 
+import com.toombs.backend.identity.entities.Identity
+import com.toombs.backend.identity.entities.IdentityMap
+import com.toombs.backend.identity.entities.IdentityMapHistory
+import com.toombs.backend.identity.services.IdentityService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

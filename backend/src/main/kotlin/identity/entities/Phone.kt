@@ -1,14 +1,19 @@
-package com.toombs.backend.identity
+package com.toombs.backend.identity.entities
 
 import javax.persistence.*
 
+
 @Entity
-data class IdentityMap(
+class Phone (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "identity_id")
     var identity: Identity? = null,
+
+    var number: String = "",
+
+    var type: String = "",
 )

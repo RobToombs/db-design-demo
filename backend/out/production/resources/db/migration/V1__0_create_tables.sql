@@ -1,4 +1,4 @@
-drop table refill, appointment, identity_map_history, identity_map, identity;
+drop table phone, mrn_overflow, refill, appointment, identity_map_history, identity_map, identity;
 
 create table identity (
       id                     BIGSERIAL PRIMARY KEY,
@@ -13,6 +13,23 @@ create table identity (
       end_date               TIMESTAMP DEFAULT NULL,
       created_by             TEXT NOT NULL DEFAULT '',
       modified_by            TEXT DEFAULT NULL
+);
+
+create table mrn_overflow (
+    id               BIGSERIAL PRIMARY KEY,
+    identity_id      BIGINT,
+    mrn              TEXT NOT NULL DEFAULT '',
+
+    FOREIGN KEY(identity_id) REFERENCES identity(id)
+);
+
+create table phone (
+    id                  BIGSERIAL PRIMARY KEY,
+    identity_id         BIGINT,
+    number              TEXT NOT NULL DEFAULT '',
+    type                TEXT NOT NULL DEFAULT '',
+
+    FOREIGN KEY(identity_id) REFERENCES identity(id)
 );
 
 create table identity_map (
