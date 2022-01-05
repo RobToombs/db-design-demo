@@ -29,7 +29,7 @@ class IdentityTableState extends State<IdentityTable> {
               future: _futureIdentities,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return _identityTable(snapshot.data!);
+                  return _identityContent(snapshot.data!);
                 } else if (snapshot.hasError) {
                   return Text("${snapshot.error}");
                 } else {
@@ -41,7 +41,108 @@ class IdentityTableState extends State<IdentityTable> {
     );
   }
 
-  Widget _identityTable(List<Identity> identities) {
+  Column _identityContent(List<Identity> identities) {
+    return Column(
+      children: [
+        _identityTable(identities),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [_phoneTable(identities), _mrnTable(identities)],
+        )
+      ],
+    );
+  }
+
+  Center _phoneTable(List<Identity> identities) {
+    TableRow _phoneHeaders() {
+      return TableRow(
+        children: <Widget>[
+          createHeader("Id"),
+          createHeader("Identity Id"),
+          createHeader("Phone Number"),
+          createHeader("Type"),
+        ],
+      );
+    }
+
+    TableRow _createPhoneRow(Phone phone) {
+      return TableRow(children: <Widget>[
+        createCell(phone.id.toString()),
+        createCell(phone.identityId.toString()),
+        createCell(phone.number),
+        createCell(phone.type),
+      ]);
+    }
+
+    List<TableRow> phoneRows = identities.expand((identity) => identity.phones).map((phone) => _createPhoneRow(phone)).toList();
+    List<TableRow> tableContent = [_phoneHeaders()];
+    tableContent.addAll(phoneRows);
+
+    Table _content = Table(
+      border: TableBorder.all(color: Colors.grey),
+      columnWidths: const <int, TableColumnWidth>{
+        0: FixedColumnWidth(50),
+        1: FixedColumnWidth(80),
+        2: FixedColumnWidth(120),
+        3: FixedColumnWidth(100),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      children: tableContent,
+    );
+
+    return Center(
+      child: Column(children: [
+        const Padding(padding: EdgeInsets.all(10.0), child: Text("Phone Numbers", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+        _content
+      ]),
+    );
+  }
+
+  Center _mrnTable(List<Identity> identities) {
+    TableRow _mrnHeaders() {
+      return TableRow(
+        children: <Widget>[
+          createHeader("Id"),
+          createHeader("Identity Id"),
+          createHeader("MRN"),
+        ],
+      );
+    }
+
+    List<TableRow> _createMrnRows(Identity identity) {
+      return identity.mrnOverflow
+          .map((phone) => TableRow(children: <Widget>[
+                createCell(phone.id.toString()),
+                createCell(phone.identityId.toString()),
+                createCell(phone.mrn),
+              ]))
+          .toList();
+    }
+
+    List<TableRow> mrnRows = identities.map((identity) => _createMrnRows(identity)).expand((rows) => rows).toList();
+    List<TableRow> tableContent = [_mrnHeaders()];
+    tableContent.addAll(mrnRows);
+
+    Table _content = Table(
+      border: TableBorder.all(color: Colors.grey),
+      columnWidths: const <int, TableColumnWidth>{
+        0: FixedColumnWidth(50),
+        1: FixedColumnWidth(80),
+        2: FixedColumnWidth(120),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      children: tableContent,
+    );
+
+    return Center(
+      child: Column(children: [
+        const Padding(padding: EdgeInsets.all(10.0), child: Text("MRN Overflow", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+        _content
+      ]),
+    );
+  }
+
+  Table _identityTable(List<Identity> identities) {
     List<TableRow> identityRows = identities.map<TableRow>((Identity identity) {
       return TableRow(children: <Widget>[
         createCell(identity.id.toString()),
@@ -176,6 +277,27 @@ class IdentityTableState extends State<IdentityTable> {
     String _updatedFirst = identity.patientFirst;
     DateTime _updatedDob = identity.dateOfBirth;
     String _updatedGender = identity.gender;
+    List<String> _updatedNumbers = identity.phones.map((phone) => phone.number).toList();
+
+    List<TextFormField> _phoneNumbers = identity.phones
+        .asMap()
+        .entries
+        .map((entry) => {
+              TextFormField(
+                decoration: InputDecoration(
+                  filled: false,
+                  labelText: 'Phone Number :' + entry.value.number,
+                ),
+                initialValue: entry.value.number,
+                onChanged: (value) {
+                  setState(() {
+                    _updatedNumbers[entry.key] = value;
+                  });
+                },
+              )
+            })
+        .expand((phoneNumberField) => phoneNumberField)
+        .toList();
 
     showDialog(
         context: context,
@@ -184,7 +306,7 @@ class IdentityTableState extends State<IdentityTable> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
             child: Container(
               padding: const EdgeInsets.all(16.0),
-              constraints: const BoxConstraints(minHeight: 385, minWidth: 600, maxHeight: 385, maxWidth: 600),
+              constraints: const BoxConstraints(minHeight: 500, minWidth: 600, maxHeight: 500, maxWidth: 600),
               child: Column(
                 children: [
                   const Text(
@@ -251,6 +373,10 @@ class IdentityTableState extends State<IdentityTable> {
                       });
                     },
                   ),
+                  SingleChildScrollView(
+                      child: Column(
+                    children: _phoneNumbers,
+                  )),
                   Container(
                       margin: const EdgeInsets.only(top: 40.0),
                       child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -276,6 +402,11 @@ class IdentityTableState extends State<IdentityTable> {
                               identity.patientLast = _updatedLast;
                               identity.gender = _updatedGender;
                               identity.dateOfBirth = _updatedDob;
+
+                              for (var i = 0; i < identity.phones.length; i++) {
+                                identity.phones[i].number = _updatedNumbers[i];
+                              }
+
                               _updateIdentity(identity).then((updated) {
                                 Navigator.pop(context);
                                 widget.refreshIdentity();

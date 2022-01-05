@@ -5,7 +5,7 @@ INSERT INTO identity (id, upi, mrn, patient_last, patient_first, date_of_birth, 
 
 INSERT INTO phone (id, identity_id, number, type) VALUES (1, 1, '603-505-4444', 'MOBILE');
 INSERT INTO phone (id, identity_id, number, type) VALUES (2, 1, '603-505-6666', 'HOME');
-INSERT INTO phone (id, identity_id, number, type) VALUES (3, 1, '555-555-5555', 'MOBILE');
+INSERT INTO phone (id, identity_id, number, type) VALUES (3, 2, '555-555-5555', 'MOBILE');
 
 INSERT INTO mrn_overflow (id, identity_id, mrn) VALUES (1, 1, '12345-2');
 INSERT INTO mrn_overflow (id, identity_id, mrn) VALUES (2, 1, '12345-3');

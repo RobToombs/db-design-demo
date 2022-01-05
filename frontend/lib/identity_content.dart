@@ -75,6 +75,7 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
   String _patientFirst = "";
   DateTime? _dateOfBirth;
   String _gender = "";
+  String _phone = "";
 
   @override
   void initState() {
@@ -85,7 +86,7 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16.0),
-      constraints: const BoxConstraints(minHeight: 400, minWidth: 600, maxHeight: 400, maxWidth: 600),
+      constraints: const BoxConstraints(minHeight: 450, minWidth: 600, maxHeight: 450, maxWidth: 600),
       child: Column(
         children: [
           const Text(
@@ -147,6 +148,17 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
               });
             },
           ),
+          TextFormField(
+            decoration: const InputDecoration(
+              filled: false,
+              labelText: 'Phone:',
+            ),
+            onChanged: (value) {
+              setState(() {
+                _phone = value;
+              });
+            },
+          ),
           Container(
               margin: const EdgeInsets.only(top: 40.0),
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -167,6 +179,8 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
                       style: TextStyle(fontSize: 20),
                     ),
                     onPressed: () {
+                      List<Phone> _phones = [Phone(id: null, identityId: null, number: _phone, type: "MOBILE")];
+
                       Identity identity = Identity(
                         id: null,
                         upi: "",
@@ -175,6 +189,8 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
                         patientFirst: _patientFirst,
                         dateOfBirth: _dateOfBirth!,
                         gender: _gender,
+                        phones: _phones,
+                        mrnOverflow: List.empty(),
                         active: true,
                         createDate: null,
                         endDate: null,

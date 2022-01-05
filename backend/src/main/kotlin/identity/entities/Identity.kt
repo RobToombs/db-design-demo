@@ -36,9 +36,9 @@ data class Identity(
 
     var modifiedBy: String = "",
 
-    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "identityId", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     var phones: List<Phone> = ArrayList(),
 
-    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "identityId", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     var mrnOverflow: List<MrnOverflow> = ArrayList(),
 )

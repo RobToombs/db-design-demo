@@ -6,11 +6,9 @@ import javax.persistence.*
 class MrnOverflow (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    var id: Long? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "identity_id")
-    var identity: Identity? = null,
+    var identityId: Long? = null,
 
     var mrn: String = "",
 )
