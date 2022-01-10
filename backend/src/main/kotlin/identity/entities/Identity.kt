@@ -11,6 +11,8 @@ data class Identity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
+    var trxId: String = "",
+
     var upi: String = "",
 
     var mrn: String = "",
@@ -45,5 +47,10 @@ data class Identity(
     fun addPhone(phone: Phone) {
         phone.identity = this
         phones.add(phone)
+    }
+
+    fun addMrnOverflow(mrn: MrnOverflow) {
+        mrn.identity = this
+        mrnOverflow.add(mrn)
     }
 }

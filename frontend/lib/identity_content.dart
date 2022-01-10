@@ -183,6 +183,7 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
 
                       Identity identity = Identity(
                         id: null,
+                        trxId: "",
                         upi: "",
                         mrn: _mrn,
                         patientLast: _patientLast,

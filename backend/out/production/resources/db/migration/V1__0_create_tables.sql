@@ -2,6 +2,7 @@ drop table phone, mrn_overflow, refill, appointment, identity_map_history, ident
 
 create table identity (
       id                     BIGSERIAL PRIMARY KEY,
+      trx_id                 TEXT NOT NULL DEFAULT '',
       upi                    TEXT NOT NULL DEFAULT '',
       mrn                    TEXT NOT NULL DEFAULT '',
       patient_last           TEXT NOT NULL DEFAULT '',

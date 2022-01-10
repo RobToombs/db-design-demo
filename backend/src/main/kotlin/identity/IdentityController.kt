@@ -43,6 +43,12 @@ class IdentityController(
         return ResponseEntity(updated, HttpStatus.CREATED)
     }
 
+    @PutMapping("/identities/refresh")
+    fun refreshIdentityUpis(): ResponseEntity<Boolean> {
+        val updated = identityService.refreshUPIs()
+        return ResponseEntity(updated, HttpStatus.OK)
+    }
+
     @PutMapping("/identities/add")
     fun addIdentity(@RequestBody identity: Identity): ResponseEntity<Boolean> {
         val result = identityService.addIdentity(identity)

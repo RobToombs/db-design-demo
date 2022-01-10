@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 
 class Identity {
   int? id;
+  String trxId;
   String upi;
   String mrn;
   String patientLast;
@@ -18,6 +19,7 @@ class Identity {
 
   Identity({
     required this.id,
+    required this.trxId,
     required this.upi,
     required this.mrn,
     required this.patientLast,
@@ -42,6 +44,7 @@ class Identity {
 
     return Identity(
       id: json['id'] as int,
+      trxId: json['trxId'] as String,
       upi: json['upi'] as String,
       mrn: json['mrn'] as String,
       patientLast: json['patientLast'] as String,
@@ -60,6 +63,7 @@ class Identity {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'trxId': trxId,
         'upi': upi,
         'mrn': mrn,
         'patientLast': patientLast,
@@ -67,6 +71,7 @@ class Identity {
         'dateOfBirth': DateFormat('yyyy-MM-dd').format(dateOfBirth),
         'gender': gender,
         'phones': phones.map((phone) => phone.toJson()).toList(),
+        'mrnOverflow': mrnOverflow.map((mrn) => mrn.toJson()).toList(),
         'active': active,
         'createDate': createDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(createDate!),
         'endDate': endDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(endDate!),

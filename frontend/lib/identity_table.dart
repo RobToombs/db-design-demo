@@ -41,10 +41,28 @@ class IdentityTableState extends State<IdentityTable> {
     );
   }
 
+  Padding _refreshUpiButton() {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: ElevatedButton(
+        child: const Text(
+          'Apply UPI Refresh',
+          style: TextStyle(fontSize: 16),
+        ),
+        onPressed: () {
+          _applyUpiRefresh().then((updated) {
+            widget.refreshIdentity();
+          });
+        },
+      ),
+    );
+  }
+
   Column _identityContent(List<Identity> identities) {
     return Column(
       children: [
         _identityTable(identities),
+        _refreshUpiButton(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [_phoneTable(identities), _mrnTable(identities)],
@@ -146,6 +164,7 @@ class IdentityTableState extends State<IdentityTable> {
     List<TableRow> identityRows = identities.map<TableRow>((Identity identity) {
       return TableRow(children: <Widget>[
         createCell(identity.id.toString()),
+        createCell(identity.trxId),
         createCell(identity.upi),
         createCell(identity.mrn),
         createCell(identity.patientLast),
@@ -169,11 +188,14 @@ class IdentityTableState extends State<IdentityTable> {
       border: TableBorder.all(color: Colors.grey),
       columnWidths: const <int, TableColumnWidth>{
         0: FixedColumnWidth(50),
-        5: FixedColumnWidth(120),
-        6: FixedColumnWidth(70),
-        7: FixedColumnWidth(60),
-        12: FixedColumnWidth(40),
+        1: FixedColumnWidth(140),
+        6: FixedColumnWidth(120),
+        7: FixedColumnWidth(70),
+        8: FixedColumnWidth(60),
+        11: FixedColumnWidth(160),
+        12: FixedColumnWidth(160),
         13: FixedColumnWidth(40),
+        14: FixedColumnWidth(40),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
@@ -184,6 +206,7 @@ class IdentityTableState extends State<IdentityTable> {
     return TableRow(
       children: <Widget>[
         createHeader("Id"),
+        createHeader("TRX Id"),
         createHeader("UPI"),
         createHeader("MRN"),
         createHeader("Last"),
@@ -481,6 +504,21 @@ class IdentityTableState extends State<IdentityTable> {
       return true;
     } else {
       throw Exception('Failed to update identity');
+    }
+  }
+
+  Future<bool> _applyUpiRefresh() async {
+    http.Response response = await http.put(
+      Uri.http('localhost:8080', 'api/identities/refresh'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to refresh upis');
     }
   }
 }
