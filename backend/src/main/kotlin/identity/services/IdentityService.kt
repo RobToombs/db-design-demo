@@ -249,7 +249,7 @@ class IdentityService(
     }
 
     private fun generateTrxId(): String {
-        return TRX_ID + UUID.randomUUID().toString()
+        return TRX_ID + UUID.randomUUID().toString().substring(0, 10)
     }
 
     @Transactional

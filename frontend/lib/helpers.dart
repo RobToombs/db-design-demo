@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 TableCell createHeader(String cellText) {
-  return _createStyledCell(
-      cellText, const TextStyle(fontWeight: FontWeight.bold));
+  return _createStyledCell(cellText, const TextStyle(fontWeight: FontWeight.bold));
 }
 
 TableCell createCell(String cellText) {
