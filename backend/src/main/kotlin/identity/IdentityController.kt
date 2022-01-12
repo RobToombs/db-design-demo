@@ -4,6 +4,7 @@ import com.toombs.backend.identity.entities.Identity
 import com.toombs.backend.identity.entities.IdentityMap
 import com.toombs.backend.identity.entities.IdentityMapHistory
 import com.toombs.backend.identity.services.IdentityService
+import com.toombs.backend.identity.services.USER
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api")
 class IdentityController(
-    private val identityService: IdentityService
+    private val identityService: IdentityService,
 ) {
     @GetMapping("/identities")
     fun identities(): ResponseEntity<List<Identity>> {
@@ -51,7 +52,7 @@ class IdentityController(
 
     @PutMapping("/identities/add")
     fun addIdentity(@RequestBody identity: Identity): ResponseEntity<Boolean> {
-        val result = identityService.addIdentity(identity)
+        val result = identityService.addIdentity(identity, USER)
         return ResponseEntity(result != null, HttpStatus.CREATED)
     }
 

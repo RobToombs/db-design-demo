@@ -12,4 +12,6 @@ interface IdentityRepository : CrudRepository<Identity, Long> {
     fun existsByIdAndActiveIsFalseAndEndDateIsNull(id: Long) : Boolean
     fun findByIdAndActiveIsFalseAndEndDateIsNull(id: Long) : Identity
     fun findFirstByActiveIsTrueAndTrxId(trxId: String): Optional<Identity>
+    fun findFirstByActiveIsTrueAndUpi(upi: String): Optional<Identity>
+    fun findByActiveIsFalseAndUpiAndEndDateIsNull(upi: String): Optional<Identity>
 }

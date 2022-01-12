@@ -24,6 +24,10 @@ class IdentityTableState extends State<IdentityTable> {
     return Center(
       child: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [_resetDB(), _refreshUpiButton(), _processETL()],
+          ),
           const Padding(padding: EdgeInsets.all(10.0), child: Text("Identity", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
           FutureBuilder<List<Identity>>(
               future: _futureIdentities,
@@ -58,11 +62,44 @@ class IdentityTableState extends State<IdentityTable> {
     );
   }
 
+  Padding _processETL() {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: ElevatedButton(
+        child: const Text(
+          'Process Appointment ETL',
+          style: TextStyle(fontSize: 16),
+        ),
+        onPressed: () {
+          _appointmentETL().then((updated) {
+            widget.refreshIdentity();
+          });
+        },
+      ),
+    );
+  }
+
+  Padding _resetDB() {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: ElevatedButton(
+        child: const Text(
+          'Reset DB',
+          style: TextStyle(fontSize: 16),
+        ),
+        onPressed: () {
+          _resetDatabase().then((updated) {
+            widget.refreshIdentity();
+          });
+        },
+      ),
+    );
+  }
+
   Column _identityContent(List<Identity> identities) {
     return Column(
       children: [
         _identityTable(identities),
-        _refreshUpiButton(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [_phoneTable(identities), _mrnTable(identities)],
@@ -504,6 +541,36 @@ class IdentityTableState extends State<IdentityTable> {
       return true;
     } else {
       throw Exception('Failed to update identity');
+    }
+  }
+
+  Future<bool> _appointmentETL() async {
+    http.Response response = await http.put(
+      Uri.http('localhost:8080', 'api/etl'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to process ETL');
+    }
+  }
+
+  Future<bool> _resetDatabase() async {
+    http.Response response = await http.put(
+      Uri.http('localhost:8080', 'api/reset'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to reset DB');
     }
   }
 
