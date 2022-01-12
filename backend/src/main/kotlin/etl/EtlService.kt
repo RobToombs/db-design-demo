@@ -17,6 +17,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
+const val APPOINTMENT_ETL = "APPOINTMENT ETL"
+
 @Service
 class EtlService(
     private val appointmentService: AppointmentService,
@@ -24,8 +26,6 @@ class EtlService(
 ) {
     @Autowired
     private val dataSource: DataSource? = null
-
-    private val APPOINTMENT_ETL = "APPOINTMENT ETL"
 
     private val UPI_COLUMN = "Upi"
     private val MRN_COLUMN = "Mrn"
@@ -52,7 +52,7 @@ class EtlService(
     fun processAppointmentEtl(): Boolean {
         val ioStream: InputStream? = this.javaClass
             .classLoader
-            .getResourceAsStream("upi_refresh.csv")
+            .getResourceAsStream("appointment_etl.csv")
 
         val csvParser = CSVParser(
             ioStream?.bufferedReader(),
@@ -78,36 +78,32 @@ class EtlService(
             appointment.date = LocalDate.parse(date, DateTimeFormatter.ISO_DATE)
             appointment.medication = medication
 
+            val phone = Phone()
+            phone.number = phoneNumber
+            phone.type = "MOBILE"
+
+            val identity = Identity()
+            identity.upi = upi
+            identity.mrn = mrn
+            identity.dateOfBirth = LocalDate.parse(dob, DateTimeFormatter.ISO_DATE)
+            identity.patientLast = last
+            identity.patientFirst = first
+            identity.gender = gender
+            identity.addPhone(phone)
+
             // Do we already have an active identity for this appointment?
             val existingMapping: IdentityMap? = identityService.findFirstIdentityMapByUpi(upi)
             if(existingMapping != null) {
                 appointmentService.addAppointment(appointment, existingMapping)
             }
             else {
-                // Do we have a matching inactive identity for this appointment?
-                val existingInactiveIdentity = identityService.findByUpiAndInactive(upi)
-                if(existingInactiveIdentity.isPresent) {
-                    // Create new mapping with CREATE
-                    // Create new mapping history
-                    // Link new mapping to activity
-                }
-                else {
-                    // No active/inactive identity exists
-                    val phone = Phone()
-                    phone.number = phoneNumber
+                // Reactivate any inactive identities + create identity mapping + create identity map history entry
+                val identityMaps = identityService.reactivateIdentityFromEtl(upi, identity)
 
-                    val identity = Identity()
-                    identity.upi = upi
-                    identity.mrn = mrn
-                    identity.dateOfBirth = LocalDate.parse(dob, DateTimeFormatter.ISO_DATE)
-                    identity.patientLast = last
-                    identity.patientFirst = first
-                    identity.gender = gender
-                    identity.addPhone(phone)
-
-                    val identityMap = identityService.addIdentity(identity, APPOINTMENT_ETL)
-                    appointmentService.addAppointment(appointment, identityMap)
-                }
+                // If no active/inactive identity exists, create a new identity + mapping + mapping history
+                // Otherwise, we've reactivated an identity with at least one existing mapping, so assign that to the appointment
+                val identityMap = if(identityMaps.isEmpty()) identityService.addIdentity(identity, APPOINTMENT_ETL) else identityMaps[0]
+                appointmentService.addAppointment(appointment, identityMap)
             }
         }
 

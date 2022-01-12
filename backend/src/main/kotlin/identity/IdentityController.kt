@@ -22,7 +22,7 @@ class IdentityController(
 
     @PutMapping("/identities/activate/{id}")
     fun activateIdentity(@PathVariable id: Long): ResponseEntity<Boolean> {
-        val activated = identityService.activateIdentity(id)
+        val activated = identityService.reactivateIdentityFromApp(id)
         return ResponseEntity(activated, HttpStatus.OK)
     }
 

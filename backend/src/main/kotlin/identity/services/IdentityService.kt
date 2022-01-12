@@ -1,5 +1,6 @@
 package com.toombs.backend.identity.services
 
+import com.toombs.backend.etl.APPOINTMENT_ETL
 import com.toombs.backend.identity.entities.*
 import com.toombs.backend.identity.repositories.IdentityMapHistoryRepository
 import com.toombs.backend.identity.repositories.IdentityMapRepository
@@ -181,7 +182,6 @@ class IdentityService(
                 val upi = generateUPI(identity)
                 val trx = generateTrxId()
 
-                // TODO Search for existing UPI?
                 result = createAndSaveNewIdentity(identity, upi, trx, USER)
             }
             else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
@@ -194,25 +194,27 @@ class IdentityService(
 
     fun addIdentity(identity: Identity, user: String): IdentityMap? {
         val upi = if (identity.upi == "") generateUPI(identity) else identity.upi
-        val trxId = generateTrxId()
+        val trxId = if (identity.trxId == "") generateTrxId() else identity.trxId
 
-        // TODO search for existing UPI?
         val newIdentity = createAndSaveNewIdentity(identity, upi, trxId, user)
         return createActiveIdentityMap(newIdentity)
     }
 
-    fun activateIdentity(id: Long): Boolean {
+    fun reactivateIdentityFromEtl(upi: String, etlIdentity: Identity): List<IdentityMap> {
+        val exists = identityRepository.findByActiveIsFalseAndUpiAndEndDateIsNull(upi)
+        if(exists.isPresent) {
+            val existingIdentity = exists.get()
+            return reactiveIdentity(existingIdentity, APPOINTMENT_ETL)
+        }
+
+        return emptyList()
+    }
+
+    fun reactivateIdentityFromApp(id: Long): Boolean {
         val exists = identityRepository.existsByIdAndActiveIsFalseAndEndDateIsNull(id)
         if(exists) {
             val existingIdentity = identityRepository.findByIdAndActiveIsFalseAndEndDateIsNull(id)
-            val now = LocalDateTime.now()
-
-            retireExistingIdentity(existingIdentity, now, USER)
-
-            val newIdentity = createNewIdentity(existingIdentity, existingIdentity.upi, existingIdentity.trxId, USER)
-            val activeIdentity : Identity = save(newIdentity)
-
-            val activatedMaps = updateIdentityMaps(activeIdentity, existingIdentity.id!!, now)
+            val activatedMaps = reactiveIdentity(existingIdentity, USER)
 
             identityHubService.activateMappedActivities(activatedMaps)
 
@@ -220,6 +222,17 @@ class IdentityService(
         }
 
         return false
+    }
+
+    private fun reactiveIdentity(existingIdentity: Identity, user: String): List<IdentityMap> {
+        val now = LocalDateTime.now()
+
+        retireExistingIdentity(existingIdentity, now, user)
+
+        val newIdentity = createNewIdentity(existingIdentity, existingIdentity.upi, existingIdentity.trxId, user)
+        val activeIdentity: Identity = save(newIdentity)
+
+        return updateIdentityMaps(activeIdentity, existingIdentity.id!!, now)
     }
 
     fun deactivateIdentity(id: Long): Boolean {
@@ -274,11 +287,6 @@ class IdentityService(
         }
 
         return result
-    }
-
-    fun createAndSaveNewIdentity(identity: Identity, user: String): Identity {
-        val trxId = generateTrxId()
-        return createAndSaveNewIdentity(identity, identity.upi, trxId, user)
     }
 
     @Transactional
@@ -367,13 +375,26 @@ class IdentityService(
     private fun updateIdentityMaps(activeIdentity: Identity, previousId: Long, eventTime: LocalDateTime): List<IdentityMap> {
         val identityMaps = identityMapRepository.findAllByIdentityId(previousId)
 
-        for(identityMap in identityMaps) {
-            createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, activeIdentity.id, eventTime, UPDATE)
-
-            identityMap.identity = activeIdentity
+        // If a mapping does not exist for this identity, create one
+        if(identityMaps.isEmpty()) {
+            return listOfNotNull(createActiveIdentityMap(activeIdentity))
         }
+        // If a mapping does exist for this identity, update all of them to point to the new active identity
+        else {
+            for (identityMap in identityMaps) {
+                createIdentityMapHistoryEntry(
+                    identityMap.id,
+                    identityMap.identity?.id,
+                    activeIdentity.id,
+                    eventTime,
+                    UPDATE
+                )
 
-        return saveAll(identityMaps)
+                identityMap.identity = activeIdentity
+            }
+
+            return saveAll(identityMaps)
+        }
     }
 
     private fun createIdentityMapHistoryEntry(identityMapId: Long?, oldIdentityId: Long?, newIdentityId: Long?, eventTime: LocalDateTime?, event: String) {
