@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/refill_content.dart';
 
 import 'appointment_content.dart';
+import 'audit_content.dart';
 import 'identity_content.dart';
 
 void main() {
@@ -31,7 +32,7 @@ class _PatientCentricPageState extends State<PatientCentricPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(50.0),
@@ -46,6 +47,7 @@ class _PatientCentricPageState extends State<PatientCentricPage> {
                 Tab(text: "Appointments"),
                 Tab(text: "Refills"),
                 Tab(text: "Identity"),
+                Tab(text: "Audit"),
               ],
             ),
           ),
@@ -55,6 +57,7 @@ class _PatientCentricPageState extends State<PatientCentricPage> {
             const AppointmentContent(),
             const RefillContent(),
             IdentityContent(),
+            AuditContent(),
           ],
         ),
       ),

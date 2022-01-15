@@ -1,5 +1,6 @@
 package com.toombs.backend.identity
 
+import com.toombs.backend.identity.entities.Audit
 import com.toombs.backend.identity.entities.Identity
 import com.toombs.backend.identity.entities.IdentityMap
 import com.toombs.backend.identity.entities.IdentityMapHistory
@@ -18,6 +19,18 @@ class IdentityController(
     fun identities(): ResponseEntity<List<Identity>> {
         val identities = identityService.getIdentities()
         return ResponseEntity(identities, HttpStatus.OK)
+    }
+
+    @GetMapping("/identities/current")
+    fun currentIdentities(): ResponseEntity<List<Identity>> {
+        val identities = identityService.getCurrentIdentities()
+        return ResponseEntity(identities, HttpStatus.OK)
+    }
+
+    @GetMapping("/identities/audit/{id}")
+    fun identityAudit(@PathVariable id: Long): ResponseEntity<List<Audit>> {
+        val auditTrail = identityService.getAuditTrail(id)
+        return ResponseEntity(auditTrail, HttpStatus.OK)
     }
 
     @PutMapping("/identities/activate/{id}")

@@ -16,6 +16,8 @@ import javax.transaction.Transactional
 
 const val USER = "rtoombs@shieldsrx.com"
 
+val AUDIT_GENERATOR = AuditGenerator()
+
 @Service
 class IdentityService(
     private val identityRepository: IdentityRepository,
@@ -38,8 +40,22 @@ class IdentityService(
         return identityRepository.findAllByOrderByIdAsc()
     }
 
+    fun getCurrentIdentities(): List<Identity> {
+        return identityRepository.findAllByEndDateIsNullOrderByPatientLastAsc()
+    }
+
     fun getActiveIdentities(): List<Identity> {
         return identityRepository.findByActiveIsTrueOrderByPatientLastAsc()
+    }
+
+    fun getAuditTrail(id: Long): List<Audit> {
+        val optional = identityRepository.findById(id)
+        if(optional.isPresent) {
+            val identities = identityRepository.findAllByTrxIdOrderByCreateDateAsc(optional.get().trxId)
+            return AUDIT_GENERATOR.generateAuditTrail(identities)
+        }
+
+        return emptyList()
     }
 
     fun refreshUPIs(): Boolean {

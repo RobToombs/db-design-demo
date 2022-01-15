@@ -259,3 +259,52 @@ class Refill {
         'callAttempts': callAttempts,
       };
 }
+
+class Audit {
+  String createdBy;
+  String createDate;
+  String event;
+  List<Delta> deltas;
+
+  Audit({
+    required this.createdBy,
+    required this.createDate,
+    required this.event,
+    required this.deltas,
+  });
+
+  factory Audit.fromJson(Map<String, dynamic> json) {
+    var deltas = json['deltas'] as List;
+    List<Delta> _deltas = deltas.map((delta) => Delta.fromJson(delta)).toList();
+
+    return Audit(
+      createdBy: json['createdBy'],
+      createDate: DateTime.parse(json['createDate']).toString(),
+      event: json['event'],
+      deltas: _deltas,
+    );
+  }
+}
+
+class Delta {
+  String field;
+  String old;
+  String current;
+  String event;
+
+  Delta({
+    required this.field,
+    required this.old,
+    required this.current,
+    required this.event,
+  });
+
+  factory Delta.fromJson(Map<String, dynamic> json) {
+    return Delta(
+      field: json['field'],
+      old: json['old'],
+      current: json['new'],
+      event: json['event'],
+    );
+  }
+}
