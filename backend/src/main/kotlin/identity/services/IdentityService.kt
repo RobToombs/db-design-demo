@@ -272,10 +272,6 @@ class IdentityService(
         return false
     }
 
-    fun findByUpiAndInactive(upi: String): Optional<Identity> {
-        return identityRepository.findByActiveIsFalseAndUpiAndEndDateIsNull(upi)
-    }
-
     fun findFirstIdentityMapByUpi(upi: String): IdentityMap? {
         val result = identityRepository.findFirstByActiveIsTrueAndUpi(upi)
         if(result.isPresent) {

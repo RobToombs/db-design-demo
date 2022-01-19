@@ -143,6 +143,18 @@ class _AuditList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color determineColor(String event) {
+      if (event == 'CREATE') {
+        return const Color(0xff565cfd);
+      } else if (event == 'ACTIVATE') {
+        return const Color(0xff66c97f);
+      } else if (event == 'DEACTIVATE') {
+        return const Color(0xffff678a);
+      } else {
+        return const Color(0xff2cffe0);
+      }
+    }
+
     return DefaultTextStyle(
       style: const TextStyle(
         color: Color(0xff9b9b9b),
@@ -163,48 +175,37 @@ class _AuditList extends StatelessWidget {
             ),
           ),
           builder: TimelineTileBuilder.connected(
-              connectionDirection: ConnectionDirection.before,
-              itemCount: audits.length,
-              contentsBuilder: (_, index) {
-                //if (audits[index].isCompleted) return null;
+            connectionDirection: ConnectionDirection.before,
+            itemCount: audits.length,
+            contentsBuilder: (_, index) {
+              //if (audits[index].isCompleted) return null;
 
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        audits[index].event + " - " + audits[index].createDate,
-                        style: DefaultTextStyle.of(context).style.copyWith(
-                              fontSize: 18.0,
-                            ),
-                      ),
-                      _ChangeLog(event: audits[index].event, deltas: audits[index].deltas),
-                    ],
-                  ),
-                );
-              },
-              indicatorBuilder: (_, index) {
-                return const OutlinedDotIndicator(
-                  borderWidth: 2.5,
-                );
-              },
-              connectorBuilder: (_, index, ___) {
-                Color determineColor() {
-                  if (audits[index].event == 'CREATE') {
-                    return const Color(0xff565cfd);
-                  } else if (audits[index].event == 'ACTIVATE') {
-                    return const Color(0xff66c97f);
-                  } else if (audits[index].event == 'DEACTIVATE') {
-                    return const Color(0xffff678a);
-                  } else {
-                    return const Color(0xff2cffe0);
-                  }
-                }
-
-                return SolidLineConnector(color: determineColor());
-              }),
+              return Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      audits[index].event + " - " + audits[index].createDate,
+                      style: DefaultTextStyle.of(context).style.copyWith(
+                            fontSize: 18.0,
+                          ),
+                    ),
+                    _ChangeLog(event: audits[index].event, deltas: audits[index].deltas),
+                  ],
+                ),
+              );
+            },
+            indicatorBuilder: (_, index) {
+              return const OutlinedDotIndicator(
+                borderWidth: 2.5,
+              );
+            },
+            connectorBuilder: (_, index, ___) => SolidLineConnector(
+              color: determineColor(audits[index - 1].event),
+            ),
+          ),
         ),
       ),
     );
