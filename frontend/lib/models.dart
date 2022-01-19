@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+import 'helpers.dart';
+
 class Identity {
   int? id;
   String trxId;
@@ -279,7 +281,7 @@ class Audit {
 
     return Audit(
       createdBy: json['createdBy'],
-      createDate: DateTime.parse(json['createDate']).toString(),
+      createDate: formatDateTime(DateTime.parse(json['createDate'])),
       event: json['event'],
       deltas: _deltas,
     );
@@ -290,13 +292,11 @@ class Delta {
   String field;
   String old;
   String current;
-  String event;
 
   Delta({
     required this.field,
     required this.old,
     required this.current,
-    required this.event,
   });
 
   factory Delta.fromJson(Map<String, dynamic> json) {
@@ -304,7 +304,6 @@ class Delta {
       field: json['field'],
       old: json['old'],
       current: json['new'],
-      event: json['event'],
     );
   }
 }

@@ -50,11 +50,11 @@ class AuditGenerator {
     private fun creationDelta(identity: Identity): List<Delta> {
         val result = mutableListOf<Delta>()
 
-        result.add(Delta(PRIMARY_MRN, "", identity.mrn, DeltaEvent.CREATE))
-        result.add(Delta(LAST, "", identity.patientLast, DeltaEvent.CREATE))
-        result.add(Delta(FIRST, "", identity.patientFirst, DeltaEvent.CREATE))
-        result.add(Delta(DOB, "", identity.dateOfBirth.toString(), DeltaEvent.CREATE))
-        result.add(Delta(GENDER, "", identity.gender, DeltaEvent.CREATE))
+        result.add(Delta(PRIMARY_MRN, "", identity.mrn))
+        result.add(Delta(LAST, "", identity.patientLast))
+        result.add(Delta(FIRST, "", identity.patientFirst))
+        result.add(Delta(DOB, "", identity.dateOfBirth.toString()))
+        result.add(Delta(GENDER, "", identity.gender))
 
         return result
     }
@@ -68,17 +68,29 @@ class AuditGenerator {
         addDeltaIfUpdated(old.dateOfBirth, new.dateOfBirth, DOB, deltas)
         addDeltaIfUpdated(old.gender, new.gender, GENDER, deltas)
 
+        val deltaEvent = determineEvent(old, new, deltas)
+
         return Audit(
             createDate = new.createDate!!,
             createdBy = new.createdBy,
-            event = DeltaEvent.UPDATE,
+            event = deltaEvent,
             deltas = deltas
         )
     }
 
+    private fun determineEvent(old: Identity, new: Identity, deltas: MutableList<Delta>): DeltaEvent {
+        return if (deltas.isNotEmpty()) {
+            DeltaEvent.UPDATE
+        } else if (new.active && !old.active) {
+            DeltaEvent.ACTIVATE
+        } else {
+            DeltaEvent.DEACTIVATE
+        }
+    }
+
     private fun addDeltaIfUpdated(old: Any?, new: Any?, field: String, deltas: MutableList<Delta>) {
         if(!Objects.equals(old, new)) {
-            deltas.add(Delta(field, old.toString(), new.toString(), DeltaEvent.UPDATE))
+            deltas.add(Delta(field, old.toString(), new.toString()))
         }
     }
 

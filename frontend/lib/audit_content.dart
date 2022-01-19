@@ -3,6 +3,7 @@ import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:timelines/timelines.dart';
 
 import 'helpers.dart';
 import 'models.dart';
@@ -60,16 +61,9 @@ class _AuditTableState extends State<AuditTable> {
   }
 
   Widget _createAuditListView(List<Audit> auditTrail) {
-    ListView auditList = ListView.builder(
-      itemCount: auditTrail.length,
-      itemBuilder: (context, index) {
-        Audit audit = auditTrail[index];
-
-        return Text(audit.createdBy);
-      },
+    return Expanded(
+      child: _AuditList(audits: auditTrail),
     );
-
-    return SizedBox(height: 885, width: 1000, child: auditList);
   }
 
   Widget _identityListView() {
@@ -139,5 +133,151 @@ class _AuditTableState extends State<AuditTable> {
     } else {
       throw Exception('Failed to load identities');
     }
+  }
+}
+
+class _AuditList extends StatelessWidget {
+  const _AuditList({Key? key, required this.audits}) : super(key: key);
+
+  final List<Audit> audits;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTextStyle(
+      style: const TextStyle(
+        color: Color(0xff9b9b9b),
+        fontSize: 12.5,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: FixedTimeline.tileBuilder(
+          theme: TimelineThemeData(
+            nodePosition: 0,
+            color: const Color(0xff989898),
+            indicatorTheme: const IndicatorThemeData(
+              position: 0,
+              size: 20.0,
+            ),
+            connectorTheme: const ConnectorThemeData(
+              thickness: 2.5,
+            ),
+          ),
+          builder: TimelineTileBuilder.connected(
+              connectionDirection: ConnectionDirection.before,
+              itemCount: audits.length,
+              contentsBuilder: (_, index) {
+                //if (audits[index].isCompleted) return null;
+
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        audits[index].event + " - " + audits[index].createDate,
+                        style: DefaultTextStyle.of(context).style.copyWith(
+                              fontSize: 18.0,
+                            ),
+                      ),
+                      _ChangeLog(event: audits[index].event, deltas: audits[index].deltas),
+                    ],
+                  ),
+                );
+              },
+              indicatorBuilder: (_, index) {
+                return const OutlinedDotIndicator(
+                  borderWidth: 2.5,
+                );
+              },
+              connectorBuilder: (_, index, ___) {
+                Color determineColor() {
+                  if (audits[index].event == 'CREATE') {
+                    return const Color(0xff565cfd);
+                  } else if (audits[index].event == 'ACTIVATE') {
+                    return const Color(0xff66c97f);
+                  } else if (audits[index].event == 'DEACTIVATE') {
+                    return const Color(0xffff678a);
+                  } else {
+                    return const Color(0xff2cffe0);
+                  }
+                }
+
+                return SolidLineConnector(color: determineColor());
+              }),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChangeLog extends StatelessWidget {
+  const _ChangeLog({
+    required this.event,
+    required this.deltas,
+  });
+
+  final String event;
+  final List<Delta> deltas;
+
+  @override
+  Widget build(BuildContext context) {
+    bool isEdgeIndex(int index) {
+      return index == 0 || index == deltas.length + 1;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: FixedTimeline.tileBuilder(
+        theme: TimelineTheme.of(context).copyWith(
+          nodePosition: 0,
+          connectorTheme: TimelineTheme.of(context).connectorTheme.copyWith(
+                thickness: 1.0,
+              ),
+          indicatorTheme: TimelineTheme.of(context).indicatorTheme.copyWith(
+                size: 10.0,
+                position: 0.5,
+              ),
+        ),
+        builder: TimelineTileBuilder(
+          indicatorBuilder: (_, index) => !isEdgeIndex(index) ? Indicator.outlined(borderWidth: 1.0) : null,
+          startConnectorBuilder: (_, index) => Connector.solidLine(),
+          endConnectorBuilder: (_, index) => Connector.solidLine(),
+          contentsBuilder: (_, index) {
+            if (isEdgeIndex(index)) {
+              return null;
+            }
+
+            if (event == 'CREATE') {
+              return Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Row(children: [
+                  Text(
+                    deltas[index - 1].field,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(" - " + deltas[index - 1].current),
+                ]),
+              );
+            } else {
+              return Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Row(children: [
+                  Text(
+                    deltas[index - 1].field,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text("      Old:  " + deltas[index - 1].old),
+                  Text("      New:  " + deltas[index - 1].current),
+                ]),
+              );
+            }
+          },
+          itemExtentBuilder: (_, index) => isEdgeIndex(index) ? 10.0 : 30.0,
+          nodeItemOverlapBuilder: (_, index) => isEdgeIndex(index) ? true : null,
+          itemCount: deltas.length + 2,
+        ),
+      ),
+    );
   }
 }

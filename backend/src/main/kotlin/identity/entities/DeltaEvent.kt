@@ -1,5 +1,5 @@
 package com.toombs.backend.identity.entities
 
 enum class DeltaEvent {
-    CREATE, UPDATE, DELETE
+    CREATE, UPDATE, ACTIVATE, DEACTIVATE
 }
