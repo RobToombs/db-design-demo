@@ -1,7 +1,7 @@
 truncate phone, mrn_overflow, appointment, refill, identity_map, identity, identity_map_history;
 
-INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by) VALUES (1, '-2084392503', 'TRX-13712371123', '12345', 'Tombs', 'Robert', '1990-03-03', 'M', true, now(), null, 'dani@shieldsrx.com', '');
-INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by) VALUES (2, '821534616', 'TRX-23321253278', '321345', 'Jobs', 'Steve', '1955-02-24', 'F', true, now(), null, 'stella@shieldsrx.com', '');
+INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by, done) VALUES (1, '-2084392503', 'TRX-13712371123', '12345', 'Tombs', 'Robert', '1990-03-03', 'M', true, now(), null, 'dani@shieldsrx.com', '', false);
+INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by, done) VALUES (2, '821534616', 'TRX-23321253278', '321345', 'Jobs', 'Steve', '1955-02-24', 'F', true, now(), null, 'stella@shieldsrx.com', '', false);
 
 INSERT INTO phone (id, identity_id, number, type) VALUES (1, 1, '603-505-4444', 'MOBILE');
 INSERT INTO phone (id, identity_id, number, type) VALUES (2, 1, '603-505-6666', 'HOME');

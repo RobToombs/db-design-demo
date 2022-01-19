@@ -10,6 +10,7 @@ create table identity (
       date_of_birth          DATE DEFAULT NULL,
       gender                 TEXT NOT NULL DEFAULT '',
       active                 BOOLEAN NOT NULL DEFAULT false,
+      done                   BOOLEAN NOT NULL DEFAULT false,
       create_date            TIMESTAMP DEFAULT now(),
       end_date               TIMESTAMP DEFAULT NULL,
       created_by             TEXT NOT NULL DEFAULT '',

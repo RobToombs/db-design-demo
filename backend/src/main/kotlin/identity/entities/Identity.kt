@@ -28,6 +28,8 @@ data class Identity(
 
     var active: Boolean = false,
 
+    var done: Boolean = false,
+
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     var createDate: LocalDateTime? = null,
 

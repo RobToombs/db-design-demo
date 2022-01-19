@@ -41,11 +41,11 @@ class IdentityService(
     }
 
     fun getCurrentIdentities(): List<Identity> {
-        return identityRepository.findAllByEndDateIsNullOrderByPatientLastAsc()
+        return identityRepository.findAllByDoneIsFalseOrderByPatientLastAsc()
     }
 
     fun getActiveIdentities(): List<Identity> {
-        return identityRepository.findByActiveIsTrueOrderByPatientLastAsc()
+        return identityRepository.findByActiveIsTrueAndDoneIsFalseOrderByPatientLastAsc()
     }
 
     fun getAuditTrail(id: Long): List<Audit> {
@@ -76,7 +76,7 @@ class IdentityService(
             val trxId = record.get(TRX_ID_COLUMN)
             val newUpi = record.get(UPI_COLUMN)
 
-            val optional = identityRepository.findFirstByActiveIsTrueAndTrxId(trxId)
+            val optional = identityRepository.findFirstByActiveIsTrueAndDoneIsFalseAndTrxId(trxId)
             if(optional.isPresent) {
                 val existingIdentity = optional.get()
 
@@ -94,7 +94,7 @@ class IdentityService(
     }
 
     fun updateIdentity(updatedIdentity: Identity) : Boolean {
-        if(updatedIdentity.id == null || !identityRepository.existsByIdAndActiveIsTrue(updatedIdentity.id!!)) {
+        if(updatedIdentity.id == null || !identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(updatedIdentity.id!!)) {
             return false
         }
 
@@ -139,7 +139,7 @@ class IdentityService(
     }
 
     fun updateIdentityMap(id: Long, newIdentityId: Long): Boolean {
-        if(!identityRepository.existsByIdAndActiveIsTrue(newIdentityId)) {
+        if(!identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(newIdentityId)) {
             return false
         }
 
@@ -147,7 +147,7 @@ class IdentityService(
             return false
         }
 
-        val destinationIdentity = identityRepository.findByIdAndActiveIsTrue(newIdentityId)
+        val destinationIdentity = identityRepository.findByIdAndActiveIsTrueAndDoneIsFalse(newIdentityId)
         val identityMap = identityMapRepository.findById(id).get()
 
         val now = LocalDateTime.now()
@@ -200,7 +200,7 @@ class IdentityService(
 
                 result = createAndSaveNewIdentity(identity, upi, trx, USER)
             }
-            else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
+            else if(identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(id)) {
                 result = identityRepository.findById(id).get()
             }
         }
@@ -217,7 +217,7 @@ class IdentityService(
     }
 
     fun reactivateIdentityFromEtl(upi: String, etlIdentity: Identity): List<IdentityMap> {
-        val exists = identityRepository.findByActiveIsFalseAndUpiAndEndDateIsNull(upi)
+        val exists = identityRepository.findByActiveIsFalseAndDoneIsFalseAndUpi(upi)
         if(exists.isPresent) {
             val existingIdentity = exists.get()
             return reactiveIdentity(existingIdentity, APPOINTMENT_ETL)
@@ -227,7 +227,7 @@ class IdentityService(
     }
 
     fun reactivateIdentityFromApp(id: Long): Boolean {
-        val exists = identityRepository.existsByIdAndActiveIsFalseAndEndDateIsNull(id)
+        val exists = identityRepository.existsByIdAndActiveIsFalseAndDoneIsFalse(id)
         if(exists) {
             val existingIdentity = identityRepository.findByIdAndActiveIsFalseAndEndDateIsNull(id)
             val activatedMaps = reactiveIdentity(existingIdentity, USER)
@@ -252,9 +252,9 @@ class IdentityService(
     }
 
     fun deactivateIdentity(id: Long): Boolean {
-        val exists = identityRepository.existsByIdAndActiveIsTrue(id)
+        val exists = identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(id)
         if(exists) {
-            val existingIdentity = identityRepository.findByIdAndActiveIsTrue(id)
+            val existingIdentity = identityRepository.findByIdAndActiveIsTrueAndDoneIsFalse(id)
             val now = LocalDateTime.now()
 
             retireExistingIdentity(existingIdentity, now, USER)
@@ -273,7 +273,7 @@ class IdentityService(
     }
 
     fun findFirstIdentityMapByUpi(upi: String): IdentityMap? {
-        val result = identityRepository.findFirstByActiveIsTrueAndUpi(upi)
+        val result = identityRepository.findFirstByActiveIsTrueAndDoneIsFalseAndUpi(upi)
         if(result.isPresent) {
             val identity = result.get()
             if(identityMapRepository.existsByIdentityId(identity.id!!)) {
@@ -379,7 +379,7 @@ class IdentityService(
     private fun retireExistingIdentity(existingIdentity: Identity, now: LocalDateTime?, user: String) {
         existingIdentity.endDate = now
         existingIdentity.modifiedBy = user
-        existingIdentity.active = false
+        existingIdentity.done = true
 
         save(existingIdentity)
     }

@@ -5,15 +5,15 @@ import org.springframework.data.repository.CrudRepository
 import java.util.*
 
 interface IdentityRepository : CrudRepository<Identity, Long> {
-    fun existsByIdAndActiveIsTrue(id: Long) : Boolean
-    fun findByIdAndActiveIsTrue(id: Long) : Identity
+    fun existsByIdAndActiveIsTrueAndDoneIsFalse(id: Long) : Boolean
+    fun findByIdAndActiveIsTrueAndDoneIsFalse(id: Long) : Identity
     fun findAllByOrderByIdAsc() : List<Identity>
-    fun findAllByEndDateIsNullOrderByPatientLastAsc(): List<Identity>
-    fun findByActiveIsTrueOrderByPatientLastAsc(): List<Identity>
-    fun existsByIdAndActiveIsFalseAndEndDateIsNull(id: Long) : Boolean
+    fun findAllByDoneIsFalseOrderByPatientLastAsc(): List<Identity>
+    fun findByActiveIsTrueAndDoneIsFalseOrderByPatientLastAsc(): List<Identity>
+    fun existsByIdAndActiveIsFalseAndDoneIsFalse(id: Long) : Boolean
     fun findByIdAndActiveIsFalseAndEndDateIsNull(id: Long) : Identity
-    fun findFirstByActiveIsTrueAndTrxId(trxId: String): Optional<Identity>
-    fun findFirstByActiveIsTrueAndUpi(upi: String): Optional<Identity>
-    fun findByActiveIsFalseAndUpiAndEndDateIsNull(upi: String): Optional<Identity>
+    fun findFirstByActiveIsTrueAndDoneIsFalseAndTrxId(trxId: String): Optional<Identity>
+    fun findFirstByActiveIsTrueAndDoneIsFalseAndUpi(upi: String): Optional<Identity>
+    fun findByActiveIsFalseAndDoneIsFalseAndUpi(upi: String): Optional<Identity>
     fun findAllByTrxIdOrderByCreateDateAsc(trxId: String): List<Identity>
 }

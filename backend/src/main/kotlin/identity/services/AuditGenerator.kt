@@ -12,8 +12,8 @@ const val LAST: String  = "Last"
 const val FIRST: String  = "First"
 const val DOB: String  = "DOB"
 const val GENDER: String  = "Gender"
-const val ACTIVE: String  = "Active"
 const val PHONE: String  = "Phone"
+const val UPI: String  = "Upi"
 
 class AuditGenerator {
 
@@ -67,6 +67,13 @@ class AuditGenerator {
         addDeltaIfUpdated(old.patientFirst, new.patientFirst, FIRST, deltas)
         addDeltaIfUpdated(old.dateOfBirth, new.dateOfBirth, DOB, deltas)
         addDeltaIfUpdated(old.gender, new.gender, GENDER, deltas)
+        addDeltaIfUpdated(old.upi, new.upi, UPI, deltas)
+
+        for(i in 0 until old.phones.size) {
+            val oldPhone = old.phones[i].number
+            val newPhone = new.phones[i].number
+            addDeltaIfUpdated(oldPhone, newPhone, PHONE, deltas)
+        }
 
         val deltaEvent = determineEvent(old, new, deltas)
 

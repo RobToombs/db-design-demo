@@ -269,14 +269,14 @@ class IdentityTableState extends State<IdentityTable> {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              child: identity.active
+              child: identity.active && identity.endDate == null
                   ? const Icon(
                       Icons.edit,
                       color: Colors.blue,
                       size: 22.0,
                     )
                   : const Text(""),
-              onTap: identity.active
+              onTap: identity.active && identity.endDate == null
                   ? () {
                       _showEditModal(context, identity);
                     }

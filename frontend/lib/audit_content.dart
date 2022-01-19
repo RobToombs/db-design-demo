@@ -61,8 +61,14 @@ class _AuditTableState extends State<AuditTable> {
   }
 
   Widget _createAuditListView(List<Audit> auditTrail) {
-    return Expanded(
-      child: _AuditList(audits: auditTrail),
+    return SizedBox(
+      height: 850,
+      width: 800,
+      child: SingleChildScrollView(
+        child: Flexible(
+          child: _AuditList(audits: auditTrail),
+        ),
+      ),
     );
   }
 
@@ -143,6 +149,18 @@ class _AuditList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String space(String event) {
+      if (event == 'CREATE') {
+        return 'CREATE          ';
+      } else if (event == 'ACTIVATE') {
+        return 'ACTIVATE        ';
+      } else if (event == 'DEACTIVATE') {
+        return 'DEACTIVATE   ';
+      } else {
+        return 'UPDATE            ';
+      }
+    }
+
     Color determineColor(String event) {
       if (event == 'CREATE') {
         return const Color(0xff565cfd);
@@ -178,8 +196,6 @@ class _AuditList extends StatelessWidget {
             connectionDirection: ConnectionDirection.before,
             itemCount: audits.length,
             contentsBuilder: (_, index) {
-              //if (audits[index].isCompleted) return null;
-
               return Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Column(
@@ -187,7 +203,7 @@ class _AuditList extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      audits[index].event + " - " + audits[index].createDate,
+                      space(audits[index].event) + audits[index].createdBy + " - " + audits[index].createDate,
                       style: DefaultTextStyle.of(context).style.copyWith(
                             fontSize: 18.0,
                           ),
