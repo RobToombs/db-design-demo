@@ -209,6 +209,7 @@ class IdentityTableState extends State<IdentityTable> {
         createCell(formatDate(identity.dateOfBirth)),
         createCell(identity.gender),
         createCell(identity.active.toString()),
+        createCell(identity.done.toString()),
         createCell(formatDateTime(identity.createDate)),
         createCell(formatDateTime(identity.endDate)),
         createCell(identity.createdBy),
@@ -229,10 +230,11 @@ class IdentityTableState extends State<IdentityTable> {
         6: FixedColumnWidth(120),
         7: FixedColumnWidth(70),
         8: FixedColumnWidth(60),
-        11: FixedColumnWidth(160),
+        9: FixedColumnWidth(60),
         12: FixedColumnWidth(160),
-        13: FixedColumnWidth(40),
+        13: FixedColumnWidth(160),
         14: FixedColumnWidth(40),
+        15: FixedColumnWidth(40),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: tableContent,
@@ -251,6 +253,7 @@ class IdentityTableState extends State<IdentityTable> {
         createHeader("DOB"),
         createHeader("Gender"),
         createHeader("Active"),
+        createHeader("Done"),
         createHeader("Create Date"),
         createHeader("End Date"),
         createHeader("Created By"),
@@ -269,14 +272,14 @@ class IdentityTableState extends State<IdentityTable> {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              child: identity.active && identity.endDate == null
+              child: identity.active && !identity.done
                   ? const Icon(
                       Icons.edit,
                       color: Colors.blue,
                       size: 22.0,
                     )
                   : const Text(""),
-              onTap: identity.active && identity.endDate == null
+              onTap: identity.active && !identity.done
                   ? () {
                       _showEditModal(context, identity);
                     }
@@ -290,14 +293,14 @@ class IdentityTableState extends State<IdentityTable> {
 
   TableCell _createActivateCell(Identity identity) {
     Widget _icon = const Text("");
-    if (identity.active && identity.endDate == null) {
+    if (identity.active && !identity.done) {
       _icon = const Icon(Icons.cancel, color: Colors.red, size: 22.0);
-    } else if (!identity.active && identity.endDate == null) {
+    } else if (!identity.active && !identity.done) {
       _icon = const Icon(Icons.check_circle, color: Colors.green, size: 22.0);
     }
 
     GestureTapCallback? _callback;
-    if (identity.active && identity.endDate == null) {
+    if (identity.active && !identity.done) {
       _callback = () {
         _deactivateIdentity(identity).then((success) {
           if (success) {
@@ -305,7 +308,7 @@ class IdentityTableState extends State<IdentityTable> {
           }
         });
       };
-    } else if (!identity.active && identity.endDate == null) {
+    } else if (!identity.active && !identity.done) {
       _callback = () {
         _activateIdentity(identity).then((success) {
           if (success) {

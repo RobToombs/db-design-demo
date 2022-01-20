@@ -182,22 +182,22 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
                       List<Phone> _phones = [Phone(id: null, identityId: null, number: _phone, type: "MOBILE")];
 
                       Identity identity = Identity(
-                        id: null,
-                        trxId: "",
-                        upi: "",
-                        mrn: _mrn,
-                        patientLast: _patientLast,
-                        patientFirst: _patientFirst,
-                        dateOfBirth: _dateOfBirth!,
-                        gender: _gender,
-                        phones: _phones,
-                        mrnOverflow: List.empty(),
-                        active: true,
-                        createDate: null,
-                        endDate: null,
-                        createdBy: "",
-                        modifiedBy: "",
-                      );
+                          id: null,
+                          trxId: "",
+                          upi: "",
+                          mrn: _mrn,
+                          patientLast: _patientLast,
+                          patientFirst: _patientFirst,
+                          dateOfBirth: _dateOfBirth!,
+                          gender: _gender,
+                          phones: _phones,
+                          mrnOverflow: List.empty(),
+                          active: true,
+                          createDate: null,
+                          endDate: null,
+                          createdBy: "",
+                          modifiedBy: "",
+                          done: false);
 
                       _addIdentity(identity).then((updated) {
                         Navigator.pop(context);

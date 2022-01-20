@@ -230,9 +230,7 @@ class IdentityService(
         val exists = identityRepository.existsByIdAndActiveIsFalseAndDoneIsFalse(id)
         if(exists) {
             val existingIdentity = identityRepository.findByIdAndActiveIsFalseAndEndDateIsNull(id)
-            val activatedMaps = reactiveIdentity(existingIdentity, USER)
-
-            identityHubService.activateMappedActivities(activatedMaps)
+            reactiveIdentity(existingIdentity, USER)
 
             return true
         }
@@ -264,7 +262,7 @@ class IdentityService(
 
             val deactivatedMaps = updateIdentityMaps(inactiveIdentity, existingIdentity.id!!, now)
 
-            identityHubService.deactivateMappedActivities(deactivatedMaps)
+            identityHubService.deactivateMappedActivities(deactivatedMaps, existingIdentity)
 
             return true
         }

@@ -18,6 +18,7 @@ class Identity {
   DateTime? endDate;
   String createdBy;
   String modifiedBy;
+  bool done;
 
   Identity({
     required this.id,
@@ -35,6 +36,7 @@ class Identity {
     required this.endDate,
     required this.createdBy,
     required this.modifiedBy,
+    required this.done,
   });
 
   factory Identity.fromJson(Map<String, dynamic> json) {
@@ -60,6 +62,7 @@ class Identity {
       endDate: json['endDate'] == null ? null : DateTime.parse(json['endDate']),
       createdBy: json['createdBy'] as String,
       modifiedBy: json['modifiedBy'] as String,
+      done: json['done'] as bool,
     );
   }
 
@@ -78,6 +81,7 @@ class Identity {
         'createDate': createDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(createDate!),
         'endDate': endDate == null ? null : DateFormat('yyyy-MM-dd hh:mm:ss').format(endDate!),
         'modifiedBy': modifiedBy,
+        'done': done,
       };
 }
 

@@ -1,5 +1,6 @@
 package com.toombs.backend.refill
 
+import com.toombs.backend.identity.entities.Identity
 import com.toombs.backend.identity.entities.IdentityMap
 import org.springframework.stereotype.Service
 import javax.transaction.Transactional
@@ -38,24 +39,7 @@ class RefillService(
         return false
     }
 
-    fun activate(identityMaps: List<IdentityMap>) {
-        val mapIds = identityMaps
-            .mapNotNull { it.id }
-            .toList()
-        val identityIds = identityMaps
-            .mapNotNull { it.identity }
-            .mapNotNull { it.id }
-            .toList()
-
-        val refills = refillRepository.findDeactive(mapIds, identityIds)
-        for(refill in refills) {
-            refill.active = true
-            refill.finalIdentity = null
-        }
-        save(refills)
-    }
-
-    fun deactivate(identityMaps: List<IdentityMap>) {
+    fun deactivate(identityMaps: List<IdentityMap>, finalId: Identity) {
         val mapIds = identityMaps
             .mapNotNull { it.id }
             .toList()
@@ -63,7 +47,7 @@ class RefillService(
         val refills = refillRepository.findActive(mapIds)
         for(refill in refills) {
             refill.active = false
-            refill.finalIdentity = refill.identityMap?.identity
+            refill.finalIdentity = finalId
         }
         save(refills)
     }

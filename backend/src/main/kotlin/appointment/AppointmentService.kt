@@ -1,5 +1,6 @@
 package com.toombs.backend.appointment
 
+import com.toombs.backend.identity.entities.Identity
 import com.toombs.backend.identity.entities.IdentityMap
 import org.springframework.stereotype.Service
 import javax.transaction.Transactional
@@ -37,24 +38,7 @@ class AppointmentService(
         return false
     }
 
-    fun activate(identityMaps: List<IdentityMap>) {
-        val mapIds = identityMaps
-            .mapNotNull { it.id }
-            .toList()
-        val identityIds = identityMaps
-            .mapNotNull { it.identity }
-            .mapNotNull { it.id }
-            .toList()
-
-        val appts = appointmentRepository.findDeactive(mapIds, identityIds)
-        for(appt in appts) {
-            appt.active = true
-            appt.finalIdentity = null
-        }
-        save(appts)
-    }
-
-    fun deactivate(identityMaps: List<IdentityMap>) {
+    fun deactivate(identityMaps: List<IdentityMap>, finalId: Identity) {
         val mapIds = identityMaps
             .mapNotNull { it.id }
             .toList()
@@ -62,7 +46,7 @@ class AppointmentService(
         val appts = appointmentRepository.findActive(mapIds)
         for(appt in appts) {
             appt.active = false
-            appt.finalIdentity = appt.identityMap?.identity
+            appt.finalIdentity = finalId
         }
         save(appts)
     }
