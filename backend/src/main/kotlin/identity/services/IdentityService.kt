@@ -1,10 +1,15 @@
 package com.toombs.backend.identity.services
 
 import com.toombs.backend.etl.APPOINTMENT_ETL
-import com.toombs.backend.identity.entities.*
-import com.toombs.backend.identity.repositories.IdentityMapHistoryRepository
-import com.toombs.backend.identity.repositories.IdentityMapRepository
-import com.toombs.backend.identity.repositories.IdentityRepository
+import com.toombs.backend.identity.entities.active.Identity
+import com.toombs.backend.identity.entities.active.IdentityMap
+import com.toombs.backend.identity.entities.active.MrnOverflow
+import com.toombs.backend.identity.entities.active.Phone
+import com.toombs.backend.identity.entities.audit.Audit
+import com.toombs.backend.identity.entities.history.IdentityMapHistory
+import com.toombs.backend.identity.repositories.history.IdentityMapHistoryRepository
+import com.toombs.backend.identity.repositories.active.IdentityMapRepository
+import com.toombs.backend.identity.repositories.active.IdentityRepository
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.springframework.stereotype.Service
@@ -24,6 +29,7 @@ class IdentityService(
     private val identityMapRepository: IdentityMapRepository,
     private val identityMapHistoryRepository: IdentityMapHistoryRepository,
     private val identityHubService: IdentityHubService,
+    private val identityHistoryService: IdentityHistoryService
 ) {
     private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 

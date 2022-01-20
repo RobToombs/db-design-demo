@@ -1,4 +1,4 @@
-package com.toombs.backend.identity.entities
+package com.toombs.backend.identity.entities.audit
 
 data class Delta(
     var field: String,

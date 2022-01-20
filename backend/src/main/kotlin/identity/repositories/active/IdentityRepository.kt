@@ -1,6 +1,6 @@
-package com.toombs.backend.identity.repositories
+package com.toombs.backend.identity.repositories.active
 
-import com.toombs.backend.identity.entities.Identity
+import com.toombs.backend.identity.entities.active.Identity
 import org.springframework.data.repository.CrudRepository
 import java.util.*
 

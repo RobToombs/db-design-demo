@@ -1,9 +1,9 @@
 package com.toombs.backend.identity.services
 
-import com.toombs.backend.identity.entities.Audit
-import com.toombs.backend.identity.entities.Delta
-import com.toombs.backend.identity.entities.DeltaEvent
-import com.toombs.backend.identity.entities.Identity
+import com.toombs.backend.identity.entities.audit.Audit
+import com.toombs.backend.identity.entities.audit.Delta
+import com.toombs.backend.identity.entities.audit.DeltaEvent
+import com.toombs.backend.identity.entities.active.Identity
 import java.util.*
 
 const val PRIMARY_MRN: String = "Primary Mrn"

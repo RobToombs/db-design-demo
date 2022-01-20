@@ -1,13 +1,12 @@
-package com.toombs.backend.identity.entities
+package com.toombs.backend.identity.entities.history
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import javax.persistence.*
 
-
 @Entity
-class Phone (
+class MrnOverflowHistory (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -16,9 +15,7 @@ class Phone (
     @JsonIdentityReference(alwaysAsId = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "identity_id")
-    var identity: Identity? = null,
+    var identity: IdentityHistory? = null,
 
-    var number: String = "",
-
-    var type: String = "",
+    var mrn: String = "",
 )

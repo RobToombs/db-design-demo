@@ -1,9 +1,9 @@
 package com.toombs.backend.identity
 
-import com.toombs.backend.identity.entities.Audit
-import com.toombs.backend.identity.entities.Identity
-import com.toombs.backend.identity.entities.IdentityMap
-import com.toombs.backend.identity.entities.IdentityMapHistory
+import com.toombs.backend.identity.entities.audit.Audit
+import com.toombs.backend.identity.entities.active.Identity
+import com.toombs.backend.identity.entities.active.IdentityMap
+import com.toombs.backend.identity.entities.history.IdentityMapHistory
 import com.toombs.backend.identity.services.IdentityService
 import com.toombs.backend.identity.services.USER
 import org.springframework.http.HttpStatus

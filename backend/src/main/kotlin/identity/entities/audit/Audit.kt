@@ -1,4 +1,4 @@
-package com.toombs.backend.identity.entities
+package com.toombs.backend.identity.entities.audit
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDateTime

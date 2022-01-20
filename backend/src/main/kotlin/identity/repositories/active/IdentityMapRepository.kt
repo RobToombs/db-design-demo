@@ -1,6 +1,6 @@
-package com.toombs.backend.identity.repositories
+package com.toombs.backend.identity.repositories.active
 
-import com.toombs.backend.identity.entities.IdentityMap
+import com.toombs.backend.identity.entities.active.IdentityMap
 import org.springframework.data.repository.CrudRepository
 
 interface IdentityMapRepository : CrudRepository<IdentityMap, Long> {

@@ -1,7 +1,7 @@
 package com.toombs.backend.appointment
 
-import com.toombs.backend.identity.entities.Identity
-import com.toombs.backend.identity.entities.IdentityMap
+import com.toombs.backend.identity.entities.active.Identity
+import com.toombs.backend.identity.entities.active.IdentityMap
 import org.springframework.stereotype.Service
 import javax.transaction.Transactional
 

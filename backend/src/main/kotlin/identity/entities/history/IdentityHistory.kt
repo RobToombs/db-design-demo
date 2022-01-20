@@ -1,4 +1,4 @@
-package com.toombs.backend.identity.entities
+package com.toombs.backend.identity.entities.history
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
-data class Identity(
+data class IdentityHistory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -41,17 +41,17 @@ data class Identity(
     var modifiedBy: String = "",
 
     @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-    var phones: MutableList<Phone> = mutableListOf(),
+    var phones: MutableList<PhoneHistory> = mutableListOf(),
 
     @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-    var mrnOverflow: MutableList<MrnOverflow> = mutableListOf(),
+    var mrnOverflow: MutableList<MrnOverflowHistory> = mutableListOf(),
 ) {
-    fun addPhone(phone: Phone) {
+    fun addPhone(phone: PhoneHistory) {
         phone.identity = this
         phones.add(phone)
     }
 
-    fun addMrnOverflow(mrn: MrnOverflow) {
+    fun addMrnOverflow(mrn: MrnOverflowHistory) {
         mrn.identity = this
         mrnOverflow.add(mrn)
     }

@@ -2,9 +2,9 @@ package com.toombs.backend.etl
 
 import com.toombs.backend.appointment.Appointment
 import com.toombs.backend.appointment.AppointmentService
-import com.toombs.backend.identity.entities.Identity
-import com.toombs.backend.identity.entities.IdentityMap
-import com.toombs.backend.identity.entities.Phone
+import com.toombs.backend.identity.entities.active.Identity
+import com.toombs.backend.identity.entities.active.IdentityMap
+import com.toombs.backend.identity.entities.active.Phone
 import com.toombs.backend.identity.services.IdentityService
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser

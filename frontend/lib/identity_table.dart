@@ -231,6 +231,8 @@ class IdentityTableState extends State<IdentityTable> {
         7: FixedColumnWidth(70),
         8: FixedColumnWidth(60),
         9: FixedColumnWidth(60),
+        10: FixedColumnWidth(160),
+        11: FixedColumnWidth(160),
         12: FixedColumnWidth(160),
         13: FixedColumnWidth(160),
         14: FixedColumnWidth(40),

@@ -58,7 +58,8 @@ create table appointment (
       date                   DATE DEFAULT NULL,
       medication             TEXT NOT NULL DEFAULT '',
 
-      FOREIGN KEY(identity_map_id) REFERENCES identity_map(id)
+      FOREIGN KEY(identity_map_id) REFERENCES identity_map(id),
+      FOREIGN KEY(identity_id) REFERENCES identity(id)
 );
 
 create table refill (
@@ -70,7 +71,8 @@ create table refill (
      call_attempts          SMALLINT DEFAULT 0 NOT NULL,
      medication             TEXT NOT NULL DEFAULT '',
 
-     FOREIGN KEY(identity_map_id) REFERENCES identity_map(id)
+     FOREIGN KEY(identity_map_id) REFERENCES identity_map(id),
+     FOREIGN KEY(identity_id) REFERENCES identity(id)
 );
 
 -- WHILE THIS WORKS PROPERLY WHEN MAKING MANUAL DB UPDATES, I'M HAVING TROUBLE

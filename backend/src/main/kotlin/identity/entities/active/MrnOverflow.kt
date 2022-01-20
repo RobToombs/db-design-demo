@@ -1,4 +1,4 @@
-package com.toombs.backend.identity.entities
+package com.toombs.backend.identity.entities.active
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference

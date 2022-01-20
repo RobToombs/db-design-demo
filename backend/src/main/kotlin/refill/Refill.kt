@@ -1,8 +1,8 @@
 package com.toombs.backend.refill
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import com.toombs.backend.identity.entities.Identity
-import com.toombs.backend.identity.entities.IdentityMap
+import com.toombs.backend.identity.entities.active.Identity
+import com.toombs.backend.identity.entities.active.IdentityMap
 import java.time.LocalDate
 import javax.persistence.*
 

@@ -1,8 +1,8 @@
 package com.toombs.backend.identity.services
 
 import com.toombs.backend.appointment.AppointmentService
-import com.toombs.backend.identity.entities.Identity
-import com.toombs.backend.identity.entities.IdentityMap
+import com.toombs.backend.identity.entities.active.Identity
+import com.toombs.backend.identity.entities.active.IdentityMap
 import com.toombs.backend.refill.RefillService
 import org.springframework.stereotype.Service
 
