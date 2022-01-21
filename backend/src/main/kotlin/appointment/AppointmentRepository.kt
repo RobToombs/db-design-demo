@@ -9,9 +9,9 @@ interface AppointmentRepository : CrudRepository<Appointment, Long> {
 
     @Query("SELECT * FROM appointment a " +
             "JOIN identity_map im ON a.identity_map_id = im.id " +
-            "WHERE a.active = FALSE AND im.id IN :mapIds AND a.identity_id IN :identityIds",
+            "WHERE a.active = FALSE AND a.identity_id IS NULL AND im.id IN :mapIds",
         nativeQuery = true)
-    fun findDeactive(mapIds: List<Long>, identityIds: List<Long>): List<Appointment>
+    fun findFinishedWithoutHistorical(mapIds: List<Long>): List<Appointment>
 
     @Query("SELECT * FROM appointment a " +
             "JOIN identity_map im ON a.identity_map_id = im.id " +

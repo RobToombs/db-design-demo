@@ -20,8 +20,8 @@ class EtlController(
 
     @PutMapping("/etl")
     fun processAppointmentEtl(): ResponseEntity<Boolean> {
-        val reset = etlService.processAppointmentEtl();
-        return ResponseEntity(reset, HttpStatus.OK)
+        val processed = etlService.processAppointmentEtl();
+        return ResponseEntity(processed, HttpStatus.OK)
     }
 
 }

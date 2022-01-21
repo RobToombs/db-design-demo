@@ -1,7 +1,7 @@
-truncate phone, mrn_overflow, appointment, refill, identity_map, identity, identity_map_history;
+truncate phone, mrn_overflow, appointment, refill, identity_map, identity, identity_map_history, identity_history, phone_history, mrn_overflow_history, identity_history;
 
-INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by, done) VALUES (1, '-2084392503', 'TRX-13712371123', '12345', 'Tombs', 'Robert', '1990-03-03', 'M', true, now(), null, 'dani@shieldsrx.com', '', false);
-INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by, done) VALUES (2, '821534616', 'TRX-23321253278', '321345', 'Jobs', 'Steve', '1955-02-24', 'F', true, now(), null, 'stella@shieldsrx.com', '', false);
+INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by) VALUES (1, '-2084392503', 'TRX-13712371123', '12345', 'Tombs', 'Robert', '1990-03-03', 'M', true, now(), null, 'dani@shieldsrx.com', '');
+INSERT INTO identity (id, upi, trx_id, mrn, patient_last, patient_first, date_of_birth, gender, active, create_date, end_date, created_by, modified_by) VALUES (2, '821534616', 'TRX-23321253278', '321345', 'Jobs', 'Steve', '1955-02-24', 'F', true, now(), null, 'stella@shieldsrx.com', '');
 
 INSERT INTO phone (id, identity_id, number, type) VALUES (1, 1, '603-505-4444', 'MOBILE');
 INSERT INTO phone (id, identity_id, number, type) VALUES (2, 1, '603-505-6666', 'HOME');
@@ -31,3 +31,6 @@ SELECT setval('refill_id_seq', (SELECT MAX(id) FROM refill));
 SELECT setval('phone_id_seq', (SELECT MAX(id) FROM phone));
 SELECT setval('mrn_overflow_id_seq', (SELECT MAX(id) FROM mrn_overflow));
 SELECT setval('identity_map_history_id_seq', (SELECT MAX(id) FROM identity_map_history));
+SELECT setval('phone_history_id_seq', (SELECT MAX(id) FROM phone_history));
+SELECT setval('mrn_overflow_history_id_seq', (SELECT MAX(id) FROM mrn_overflow_history));
+SELECT setval('identity_history_id_seq', (SELECT MAX(id) FROM identity_history));

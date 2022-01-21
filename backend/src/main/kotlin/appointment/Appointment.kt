@@ -3,6 +3,7 @@ package com.toombs.backend.appointment
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.toombs.backend.identity.entities.active.Identity
 import com.toombs.backend.identity.entities.active.IdentityMap
+import com.toombs.backend.identity.entities.history.IdentityHistory
 import java.time.LocalDate
 import javax.persistence.*
 
@@ -12,9 +13,9 @@ data class Appointment(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = true)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = [], optional = true)
     @JoinColumn(name = "identity_id")
-    var finalIdentity: Identity? = null,
+    var finalIdentity: IdentityHistory? = null,
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)
     @JoinColumn(name = "identity_map_id")

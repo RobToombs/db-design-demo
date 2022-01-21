@@ -19,6 +19,7 @@ spring:
     schemas: public
     user: postgres
     password: admin
+    baseline-on-migrate: true
   sql:
     init:
       platform: postgres

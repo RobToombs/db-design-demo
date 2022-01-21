@@ -47,11 +47,11 @@ class IdentityService(
     }
 
     fun getCurrentIdentities(): List<Identity> {
-        return identityRepository.findAllByDoneIsFalseOrderByPatientLastAsc()
+        return identityRepository.findAllByOrderByPatientLastAsc()
     }
 
     fun getActiveIdentities(): List<Identity> {
-        return identityRepository.findByActiveIsTrueAndDoneIsFalseOrderByPatientLastAsc()
+        return identityRepository.findByActiveIsTrueOrderByPatientLastAsc()
     }
 
     fun getAuditTrail(id: Long): List<Audit> {
@@ -82,17 +82,14 @@ class IdentityService(
             val trxId = record.get(TRX_ID_COLUMN)
             val newUpi = record.get(UPI_COLUMN)
 
-            val optional = identityRepository.findFirstByActiveIsTrueAndDoneIsFalseAndTrxId(trxId)
+            val optional = identityRepository.findFirstByTrxId(trxId)
             if(optional.isPresent) {
                 val existingIdentity = optional.get()
 
                 val now = LocalDateTime.now()
-
-                retireExistingIdentity(existingIdentity, now, UPI_REFRESH)
-                val newIdentity = createNewIdentity(existingIdentity, newUpi, existingIdentity.trxId, UPI_REFRESH)
-                val activeIdentity : Identity = save(newIdentity)
-
-                updateIdentityMaps(activeIdentity, existingIdentity.id!!, now)
+                retireExistingIdentity(existingIdentity, now, UPI_REFRESH, false)
+                existingIdentity.upi = newUpi
+                save(existingIdentity)
             }
         }
 
@@ -100,7 +97,7 @@ class IdentityService(
     }
 
     fun updateIdentity(updatedIdentity: Identity) : Boolean {
-        if(updatedIdentity.id == null || !identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(updatedIdentity.id!!)) {
+        if(updatedIdentity.id == null || !identityRepository.existsByIdAndActiveIsTrue(updatedIdentity.id!!)) {
             return false
         }
 
@@ -114,12 +111,9 @@ class IdentityService(
             || anyPhoneNumbersUpdated(existingIdentity, updatedIdentity)
         ) {
             val now = LocalDateTime.now()
-
-            retireExistingIdentity(existingIdentity, now, USER)
-            val newIdentity = createNewIdentity(updatedIdentity, existingIdentity.upi, existingIdentity.trxId, USER)
-            val activeIdentity : Identity = save(newIdentity)
-
-            updateIdentityMaps(activeIdentity, existingIdentity.id!!, now)
+            retireExistingIdentity(existingIdentity, now, USER, false)
+            updateIdentity(existingIdentity, updatedIdentity, USER, now)
+            save(existingIdentity)
 
             return true
         }
@@ -145,7 +139,7 @@ class IdentityService(
     }
 
     fun updateIdentityMap(id: Long, newIdentityId: Long): Boolean {
-        if(!identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(newIdentityId)) {
+        if(!identityRepository.existsByIdAndActiveIsTrue(newIdentityId)) {
             return false
         }
 
@@ -153,22 +147,31 @@ class IdentityService(
             return false
         }
 
-        val destinationIdentity = identityRepository.findByIdAndActiveIsTrueAndDoneIsFalse(newIdentityId)
+        val destinationIdentity = identityRepository.findByIdAndActiveIsTrue(newIdentityId)
         val identityMap = identityMapRepository.findById(id).get()
+
+        val existingIdentity = identityMap.identity!!
 
         val now = LocalDateTime.now()
 
         // Retire the existing identity + create a new history of the merge
-        retireExistingIdentity(identityMap.identity!!, now, USER)
-        createIdentityMapHistoryEntry(identityMap.id, identityMap.identity?.id, destinationIdentity.id, now, MERGE)
+        retireExistingIdentity(existingIdentity, now, USER, false)
+        createIdentityMapHistoryEntry(identityMap.id, existingIdentity.id, destinationIdentity.id, now, MERGE)
 
-        // Create the new "in-active" identity
-        val newIdentity = createNewIdentity(identityMap.identity!!, false)
-        save(newIdentity)
+        // Create the new "inactive" identity
+        existingIdentity.active = false
+        save(existingIdentity)
 
-        // Update the mapping to point to the selected destination identity + save the mapping
+        // Update the mapping and all other mappings currently pointed at the source identity
+        // to point to the selected destination identity + save the mapping
         identityMap.identity = destinationIdentity
         save(identityMap)
+
+        val additionalSourceMappings = identityMapRepository.findAllByIdentityId(id)
+        for(mapping in additionalSourceMappings) {
+            mapping.identity = destinationIdentity
+        }
+        saveAll(additionalSourceMappings)
 
         return true
     }
@@ -204,9 +207,10 @@ class IdentityService(
                 val upi = generateUPI(identity)
                 val trx = generateTrxId()
 
-                result = createAndSaveNewIdentity(identity, upi, trx, USER)
+                val newIdentity = createNewIdentity(identity, upi, trx, USER)
+                result = save(newIdentity)
             }
-            else if(identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(id)) {
+            else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
                 result = identityRepository.findById(id).get()
             }
         }
@@ -218,12 +222,14 @@ class IdentityService(
         val upi = if (identity.upi == "") generateUPI(identity) else identity.upi
         val trxId = if (identity.trxId == "") generateTrxId() else identity.trxId
 
-        val newIdentity = createAndSaveNewIdentity(identity, upi, trxId, user)
-        return createActiveIdentityMap(newIdentity)
+        val newIdentity = createNewIdentity(identity, upi, trxId, user)
+        val savedIdentity = save(newIdentity)
+
+        return createActiveIdentityMap(savedIdentity)
     }
 
     fun reactivateIdentityFromEtl(upi: String, etlIdentity: Identity): List<IdentityMap> {
-        val exists = identityRepository.findByActiveIsFalseAndDoneIsFalseAndUpi(upi)
+        val exists = identityRepository.findByActiveIsFalseAndUpi(upi)
         if(exists.isPresent) {
             val existingIdentity = exists.get()
             return reactiveIdentity(existingIdentity, APPOINTMENT_ETL)
@@ -233,7 +239,7 @@ class IdentityService(
     }
 
     fun reactivateIdentityFromApp(id: Long): Boolean {
-        val exists = identityRepository.existsByIdAndActiveIsFalseAndDoneIsFalse(id)
+        val exists = identityRepository.existsByIdAndActiveIsFalse(id)
         if(exists) {
             val existingIdentity = identityRepository.findByIdAndActiveIsFalseAndEndDateIsNull(id)
             reactiveIdentity(existingIdentity, USER)
@@ -244,31 +250,16 @@ class IdentityService(
         return false
     }
 
-    private fun reactiveIdentity(existingIdentity: Identity, user: String): List<IdentityMap> {
-        val now = LocalDateTime.now()
-
-        retireExistingIdentity(existingIdentity, now, user)
-
-        val newIdentity = createNewIdentity(existingIdentity, existingIdentity.upi, existingIdentity.trxId, user)
-        val activeIdentity: Identity = save(newIdentity)
-
-        return updateIdentityMaps(activeIdentity, existingIdentity.id!!, now)
-    }
-
     fun deactivateIdentity(id: Long): Boolean {
-        val exists = identityRepository.existsByIdAndActiveIsTrueAndDoneIsFalse(id)
+        val exists = identityRepository.existsByIdAndActiveIsTrue(id)
         if(exists) {
-            val existingIdentity = identityRepository.findByIdAndActiveIsTrueAndDoneIsFalse(id)
+            val existingIdentity = identityRepository.findByIdAndActiveIsTrue(id)
+
             val now = LocalDateTime.now()
 
-            retireExistingIdentity(existingIdentity, now, USER)
-
-            val newIdentity = createNewIdentity(existingIdentity, false)
-            val inactiveIdentity : Identity = save(newIdentity)
-
-            val deactivatedMaps = updateIdentityMaps(inactiveIdentity, existingIdentity.id!!, now)
-
-            identityHubService.deactivateMappedActivities(deactivatedMaps, existingIdentity)
+            retireExistingIdentity(existingIdentity, now, USER, true)
+            existingIdentity.active = false
+            save(existingIdentity)
 
             return true
         }
@@ -277,7 +268,7 @@ class IdentityService(
     }
 
     fun findFirstIdentityMapByUpi(upi: String): IdentityMap? {
-        val result = identityRepository.findFirstByActiveIsTrueAndDoneIsFalseAndUpi(upi)
+        val result = identityRepository.findFirstByActiveIsTrueAndUpi(upi)
         if(result.isPresent) {
             val identity = result.get()
             if(identityMapRepository.existsByIdentityId(identity.id!!)) {
@@ -325,6 +316,16 @@ class IdentityService(
         identityMapHistoryRepository.save(identityMapHistory)
     }
 
+    private fun reactiveIdentity(existingIdentity: Identity, user: String): List<IdentityMap> {
+        val now = LocalDateTime.now()
+
+        retireExistingIdentity(existingIdentity, now, user, false)
+        existingIdentity.active = true
+        save(existingIdentity)
+
+        return getAffectedIdentityMaps(existingIdentity)
+    }
+
     private fun generateUPI(identity: Identity): String {
         val lastName = identity.patientLast
         val dob = identity.dateOfBirth
@@ -336,17 +337,6 @@ class IdentityService(
 
     private fun generateTrxId(): String {
         return TRX_ID + UUID.randomUUID().toString().substring(0, 10)
-    }
-
-    private fun createAndSaveNewIdentity(identity: Identity, upi: String, trxId: String, user: String): Identity {
-        val newIdentity = createNewIdentity(identity, upi, trxId, user)
-        return save(newIdentity)
-    }
-
-    private fun createNewIdentity(identity: Identity, active: Boolean): Identity {
-        val newIdentity = createNewIdentity(identity, identity.upi, identity.trxId, USER)
-        newIdentity.active = active
-        return newIdentity
     }
 
     private fun createNewIdentity(identity: Identity, upi: String, trxId: String, user: String): Identity {
@@ -380,36 +370,106 @@ class IdentityService(
         return newIdentity
     }
 
-    private fun retireExistingIdentity(existingIdentity: Identity, now: LocalDateTime?, user: String) {
-        existingIdentity.endDate = now
-        existingIdentity.modifiedBy = user
-        existingIdentity.done = true
+    fun updateIdentity(existing: Identity, updated: Identity, user: String, created: LocalDateTime) {
+        existing.gender = updated.gender
+        existing.patientLast = updated.patientLast
+        existing.patientFirst = updated.patientFirst
+        existing.dateOfBirth = updated.dateOfBirth
+        existing.mrn = updated.mrn
+        existing.createdBy = user
+        existing.endDate = null
+        existing.modifiedBy = ""
+        existing.createDate = created
 
-        save(existingIdentity)
+        updatePhones(existing, updated)
+        updateMrns(existing, updated)
     }
 
-    private fun updateIdentityMaps(activeIdentity: Identity, previousId: Long, eventTime: LocalDateTime): List<IdentityMap> {
-        val identityMaps = identityMapRepository.findAllByIdentityId(previousId)
+    private fun updatePhones(existing: Identity, updated: Identity) {
+        val deletedPhones = mutableListOf<Phone>()
 
-        // If a mapping does not exist for this identity, create one
-        if(identityMaps.isEmpty()) {
-            return listOfNotNull(createActiveIdentityMap(activeIdentity))
-        }
-        // If a mapping does exist for this identity, update all of them to point to the new active identity
-        else {
-            for (identityMap in identityMaps) {
-                createIdentityMapHistoryEntry(
-                    identityMap.id,
-                    identityMap.identity?.id,
-                    activeIdentity.id,
-                    eventTime,
-                    UPDATE
-                )
+        // Update existing phones
+        for(phone in existing.phones) {
+            val updatedPhone = updated.phones.firstOrNull { it.id == phone.id }
 
-                identityMap.identity = activeIdentity
+            if(updatedPhone != null) {
+                phone.type = updatedPhone.type
+                phone.number = updatedPhone.number
+
+                if(updatedPhone.delete) {
+                    deletedPhones.add(phone)
+                }
             }
+        }
 
-            return saveAll(identityMaps)
+        // Add new phones
+        for(newPhone in updated.phones.filter { it.id == null }) {
+            val phone = Phone()
+
+            phone.type = newPhone.type
+            phone.number = newPhone.number
+
+            existing.addPhone(phone)
+        }
+
+        // Remove deleted phones
+        existing.phones.removeAll(deletedPhones)
+    }
+
+    private fun updateMrns(existing: Identity, updated: Identity) {
+        val deletedMrns = mutableListOf<MrnOverflow>()
+
+        // Update existing mrns
+        for(mrn in existing.mrnOverflow) {
+            val updatedMrn = updated.mrnOverflow.firstOrNull { it.id == mrn.id }
+
+            if(updatedMrn != null) {
+                mrn.mrn = updatedMrn.mrn
+
+                if(updatedMrn.delete) {
+                    deletedMrns.add(mrn)
+                }
+            }
+        }
+
+        // Add new mrns
+        for(newMrn in updated.mrnOverflow.filter { it.id == null }) {
+            val mrn = MrnOverflow()
+
+            mrn.mrn = newMrn.mrn
+
+            existing.addMrnOverflow(mrn)
+        }
+
+        // Remove deleted overflow mrns
+        existing.mrnOverflow.removeAll(deletedMrns)
+    }
+
+    private fun retireExistingIdentity(existingIdentity: Identity, now: LocalDateTime, user: String, isIdentityDeactivated: Boolean){
+        val identityHistory = identityHistoryService.retireIdentity(existingIdentity, now, user)
+
+        existingIdentity.createdBy = user
+        save(existingIdentity)
+
+        // Update any finished activities referencing the previous identity to reference the newly created history
+        val affectedMaps = getAffectedIdentityMaps(existingIdentity)
+        identityHubService.initializeIdentityHistories(affectedMaps, identityHistory)
+
+        if(isIdentityDeactivated) {
+            identityHubService.deactivateMappedActivities(affectedMaps, identityHistory)
+        }
+    }
+
+    private fun getAffectedIdentityMaps(identity: Identity): List<IdentityMap> {
+        val identityMaps = identityMapRepository.findAllByIdentityId(identity.id!!)
+
+        // If the activity is active and a mapping does not exist for this identity, create one
+        return if(!identity.active && identityMaps.isEmpty()) {
+            listOfNotNull(createActiveIdentityMap(identity))
+        }
+        // If a mapping does exist for this identity, return them
+        else {
+            identityMaps
         }
     }
 

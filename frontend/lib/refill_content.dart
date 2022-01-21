@@ -81,7 +81,7 @@ class _RefillTableState extends State<RefillTable> {
         9: FixedColumnWidth(120),
         10: FixedColumnWidth(60),
         11: FixedColumnWidth(80),
-        12: FixedColumnWidth(120),
+        12: FixedColumnWidth(100),
         13: FixedColumnWidth(50),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -116,7 +116,7 @@ class _RefillTableState extends State<RefillTable> {
         createHeader("Identity Gender"),
         createHeader("Active"),
         createHeader("Map Id"),
-        createHeader("Final Identity Id"),
+        createHeader("History Id"),
         createHeader("Save")
       ],
     );

@@ -79,7 +79,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
         8: FixedColumnWidth(120),
         9: FixedColumnWidth(60),
         10: FixedColumnWidth(80),
-        11: FixedColumnWidth(120),
+        11: FixedColumnWidth(100),
         12: FixedColumnWidth(50),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -113,7 +113,7 @@ class _AppointmentTableState extends State<AppointmentTable> {
         createHeader("Identity Gender"),
         createHeader("Active"),
         createHeader("Map Id"),
-        createHeader("Final Identity Id"),
+        createHeader("History Id"),
         createHeader("Save"),
       ],
     );
