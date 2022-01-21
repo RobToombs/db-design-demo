@@ -167,7 +167,7 @@ class IdentityService(
         identityMap.identity = destinationIdentity
         save(identityMap)
 
-        val additionalSourceMappings = identityMapRepository.findAllByIdentityId(id)
+        val additionalSourceMappings = identityMapRepository.findAllByIdentityId(existingIdentity.id!!)
         for(mapping in additionalSourceMappings) {
             mapping.identity = destinationIdentity
         }
@@ -464,7 +464,7 @@ class IdentityService(
         val identityMaps = identityMapRepository.findAllByIdentityId(identity.id!!)
 
         // If the activity is active and a mapping does not exist for this identity, create one
-        return if(!identity.active && identityMaps.isEmpty()) {
+        return if(identity.active && identityMaps.isEmpty()) {
             listOfNotNull(createActiveIdentityMap(identity))
         }
         // If a mapping does exist for this identity, return them
