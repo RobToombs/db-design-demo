@@ -115,7 +115,7 @@ create table mrn_overflow_history (
           identity_id      BIGINT,
           mrn              TEXT NOT NULL DEFAULT '',
 
-          FOREIGN KEY(identity_id) REFERENCES identity(id)
+          FOREIGN KEY(identity_id) REFERENCES identity_history(id)
 );
 
 create table phone_history (
@@ -124,5 +124,5 @@ create table phone_history (
            number              TEXT NOT NULL DEFAULT '',
            type                TEXT NOT NULL DEFAULT '',
 
-           FOREIGN KEY(identity_id) REFERENCES identity(id)
+           FOREIGN KEY(identity_id) REFERENCES identity_history(id)
 );

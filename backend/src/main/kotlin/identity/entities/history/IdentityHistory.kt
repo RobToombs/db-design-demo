@@ -3,9 +3,11 @@ package com.toombs.backend.identity.entities.history
 import com.toombs.backend.identity.entities.base.BaseIdentity
 import com.toombs.backend.identity.entities.base.BaseMrnOverflow
 import com.toombs.backend.identity.entities.base.BasePhone
+import org.springframework.data.annotation.Immutable
 import javax.persistence.*
 
 @Entity
+@Immutable
 class IdentityHistory (
     @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     var phones: MutableList<PhoneHistory> = mutableListOf(),
