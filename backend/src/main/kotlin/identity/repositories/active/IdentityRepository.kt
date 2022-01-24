@@ -15,5 +15,5 @@ interface IdentityRepository : CrudRepository<Identity, Long> {
     fun findFirstByTrxId(trxId: String): Optional<Identity>
     fun findFirstByActiveIsTrueAndUpi(upi: String): Optional<Identity>
     fun findByActiveIsFalseAndUpi(upi: String): Optional<Identity>
-    fun findAllByTrxIdOrderByCreateDateAsc(trxId: String): List<Identity>
+    fun findByTrxId(trxId: String): Identity
 }

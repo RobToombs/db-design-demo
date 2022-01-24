@@ -2,3 +2,4 @@
 /backend/.gradle/
 /.idea/
 .DS_Store
+/backend/out/

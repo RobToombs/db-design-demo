@@ -19,6 +19,10 @@ class IdentityHistoryService(
         return save(history)
     }
 
+    fun findByTrxId(trxId: String): List<IdentityHistory> {
+        return identityHistoryRepository.findAllByTrxIdOrderByCreateDateAsc(trxId)
+    }
+
     @Transactional
     fun save(history: IdentityHistory): IdentityHistory {
         return identityHistoryRepository.save(history)
@@ -39,14 +43,14 @@ class IdentityHistoryService(
         ih.createDate = identity.createDate
         ih.createdBy = identity.createdBy
 
-        createPhoneHistory(ih)
-        createMrnOverflowHistory(ih)
+        createPhoneHistory(ih, identity)
+        createMrnOverflowHistory(ih, identity)
 
         return ih
     }
 
-    private fun createPhoneHistory(ih: IdentityHistory) {
-        for(phone in ih.phones) {
+    private fun createPhoneHistory(ih: IdentityHistory, identity: Identity) {
+        for(phone in identity.phones) {
             val phoneHistory = PhoneHistory()
             phoneHistory.number = phone.number
             phoneHistory.type = phone.type
@@ -55,8 +59,8 @@ class IdentityHistoryService(
         }
     }
 
-    private fun createMrnOverflowHistory(ih: IdentityHistory) {
-        for(mrn in ih.mrnOverflow) {
+    private fun createMrnOverflowHistory(ih: IdentityHistory, identity: Identity) {
+        for(mrn in identity.mrnOverflow) {
             val mrnOverflowHistory = MrnOverflowHistory()
             mrnOverflowHistory.mrn = mrn.mrn
 

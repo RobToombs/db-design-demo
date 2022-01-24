@@ -20,7 +20,16 @@ import java.util.*
 import javax.transaction.Transactional
 
 const val USER = "rtoombs@shieldsrx.com"
+const val TRX_ID_COLUMN = "TrxId"
+const val UPI_COLUMN = "Upi"
 
+const val TRX_ID = "TRX-"
+const val UPI_REFRESH = "UPI REFRESH"
+const val MERGE = "MERGE"
+const val UPDATE = "UPDATE"
+const val CREATE = "CREATE"
+
+val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 val AUDIT_GENERATOR = AuditGenerator()
 
 @Service
@@ -31,17 +40,6 @@ class IdentityService(
     private val identityHubService: IdentityHubService,
     private val identityHistoryService: IdentityHistoryService
 ) {
-    private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
-    private val TRX_ID_COLUMN = "TrxId"
-    private val UPI_COLUMN = "Upi"
-
-    private val TRX_ID = "TRX-"
-    private val UPI_REFRESH = "UPI REFRESH"
-    private val MERGE = "MERGE"
-    private val UPDATE = "UPDATE"
-    private val CREATE = "CREATE"
-
     fun getIdentities(): List<Identity> {
         return identityRepository.findAllByOrderByIdAsc()
     }
@@ -57,8 +55,9 @@ class IdentityService(
     fun getAuditTrail(id: Long): List<Audit> {
         val optional = identityRepository.findById(id)
         if(optional.isPresent) {
-            val identities = identityRepository.findAllByTrxIdOrderByCreateDateAsc(optional.get().trxId)
-            return AUDIT_GENERATOR.generateAuditTrail(identities)
+            val active = identityRepository.findByTrxId(optional.get().trxId)
+            val historical = identityHistoryService.findByTrxId(optional.get().trxId)
+            return AUDIT_GENERATOR.generateAuditTrail(active, historical)
         }
 
         return emptyList()
