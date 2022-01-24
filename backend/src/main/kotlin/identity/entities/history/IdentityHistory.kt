@@ -9,19 +9,19 @@ import javax.persistence.*
 @Entity
 @Immutable
 class IdentityHistory (
-    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "identityHistory", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     var phones: MutableList<PhoneHistory> = mutableListOf(),
 
-    @OneToMany(mappedBy = "identity", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "identityHistory", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     var mrnOverflow: MutableList<MrnOverflowHistory> = mutableListOf(),
 ): BaseIdentity() {
     fun addPhone(phone: PhoneHistory) {
-        phone.identity = this
+        phone.identityHistory = this
         phones.add(phone)
     }
 
     fun addMrnOverflow(mrn: MrnOverflowHistory) {
-        mrn.identity = this
+        mrn.identityHistory = this
         mrnOverflow.add(mrn)
     }
 

@@ -8,7 +8,7 @@ interface RefillRepository : CrudRepository<Refill, Long> {
 
     @Query("SELECT * FROM refill r " +
             "JOIN identity_map im ON r.identity_map_id = im.id " +
-            "WHERE r.active = FALSE AND r.identity_id IS NULL AND im.id IN :mapIds",
+            "WHERE r.active = FALSE AND r.identity_history_id IS NULL AND im.id IN :mapIds",
         nativeQuery = true)
     fun findFinishedWithoutHistorical(mapIds: List<Long>): List<Refill>
 

@@ -14,7 +14,7 @@ data class Refill(
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = [], optional = true)
-    @JoinColumn(name = "identity_id")
+    @JoinColumn(name = "identity_history_id")
     var finalIdentity: IdentityHistory? = null,
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)

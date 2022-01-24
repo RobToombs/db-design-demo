@@ -13,6 +13,6 @@ class MrnOverflowHistory(
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator::class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "identity_id")
-    var identity: IdentityHistory? = null,
+    @JoinColumn(name = "identity_history_id")
+    var identityHistory: IdentityHistory? = null,
 ) : BaseMrnOverflow()
