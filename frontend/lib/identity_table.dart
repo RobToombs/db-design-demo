@@ -521,7 +521,7 @@ class IdentityTableState extends State<IdentityTable> {
   }
 
   Future<List<Identity>> _fetchIdentities() async {
-    http.Response response = await http.get(Uri.http('localhost:8080', 'api/identities'));
+    http.Response response = await http.get(Uri.http('localhost:8080', 'api/identities/current'));
 
     if (response.statusCode == HttpStatus.ok) {
       return (jsonDecode(response.body) as List).map((identity) => Identity.fromJson(identity)).toList();
@@ -539,7 +539,7 @@ class IdentityTableState extends State<IdentityTable> {
       body: jsonEncode(identity.toJson()),
     );
 
-    if (response.statusCode == HttpStatus.created) {
+    if (response.statusCode == HttpStatus.ok) {
       return true;
     } else {
       throw Exception('Failed to update identity');

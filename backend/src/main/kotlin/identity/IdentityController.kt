@@ -1,14 +1,17 @@
 package com.toombs.backend.identity
 
-import com.toombs.backend.identity.entities.audit.Audit
 import com.toombs.backend.identity.entities.active.Identity
 import com.toombs.backend.identity.entities.active.IdentityMap
+import com.toombs.backend.identity.entities.audit.Audit
 import com.toombs.backend.identity.entities.history.IdentityMapHistory
 import com.toombs.backend.identity.services.IdentityService
 import com.toombs.backend.identity.services.USER
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
+import java.net.URI
+
 
 @RestController
 @RequestMapping("/api")
@@ -48,7 +51,7 @@ class IdentityController(
     @PutMapping("/identities/update")
     fun updateIdentity(@RequestBody identity: Identity): ResponseEntity<Boolean> {
         val updated = identityService.updateIdentity(identity)
-        return ResponseEntity(updated, HttpStatus.CREATED)
+        return ResponseEntity(updated, HttpStatus.OK)
     }
 
     @PutMapping("/identities/refresh")
@@ -57,10 +60,17 @@ class IdentityController(
         return ResponseEntity(updated, HttpStatus.OK)
     }
 
-    @PutMapping("/identities/add")
-    fun addIdentity(@RequestBody identity: Identity): ResponseEntity<Boolean> {
+    @PostMapping("/identities/add")
+    fun addIdentity(@RequestBody identity: Identity): ResponseEntity<Identity> {
         val result = identityService.addIdentity(identity, USER)
-        return ResponseEntity(result != null, HttpStatus.CREATED)
+
+        val location: URI = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(result?.identity?.id ?: -1)
+            .toUri()
+
+        return ResponseEntity.created(location).body(result?.identity)
     }
 
     @GetMapping("/identity-maps")

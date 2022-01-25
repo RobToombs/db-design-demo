@@ -213,7 +213,7 @@ class _AddIdentificationDialogContentState extends State<AddIdentificationDialog
   }
 
   Future<bool> _addIdentity(Identity identity) async {
-    http.Response response = await http.put(
+    http.Response response = await http.post(
       Uri.http('localhost:8080', 'api/identities/add'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
