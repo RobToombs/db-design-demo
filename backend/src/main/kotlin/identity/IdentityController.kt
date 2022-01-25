@@ -74,7 +74,11 @@ class IdentityController(
             .buildAndExpand(result?.identity?.id ?: -1)
             .toUri()
 
-        return ResponseEntity.created(location).body(result?.identity)
+        return if (result != null) {
+            ResponseEntity.created(location).body(result.identity)
+        } else {
+            ResponseEntity.badRequest().build()
+        }
     }
 
     @GetMapping("/identity-maps")
