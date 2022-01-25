@@ -15,12 +15,6 @@ import org.springframework.web.bind.annotation.*
 class IdentityController(
     private val identityService: IdentityService,
 ) {
-    @GetMapping("/identities")
-    fun identities(): ResponseEntity<List<Identity>> {
-        val identities = identityService.getIdentities()
-        return ResponseEntity(identities, HttpStatus.OK)
-    }
-
     @GetMapping("/identities/current")
     fun currentIdentities(): ResponseEntity<List<Identity>> {
         val identities = identityService.getCurrentIdentities()

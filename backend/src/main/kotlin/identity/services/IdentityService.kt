@@ -40,10 +40,6 @@ class IdentityService(
     private val identityHubService: IdentityHubService,
     private val identityHistoryService: IdentityHistoryService
 ) {
-    fun getIdentities(): List<Identity> {
-        return identityRepository.findAllByOrderByIdAsc()
-    }
-
     fun getCurrentIdentities(): List<Identity> {
         return identityRepository.findAllByOrderByPatientLastAsc()
     }

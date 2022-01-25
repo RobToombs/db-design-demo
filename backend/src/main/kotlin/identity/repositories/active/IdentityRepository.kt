@@ -7,7 +7,6 @@ import java.util.*
 interface IdentityRepository : CrudRepository<Identity, Long> {
     fun existsByIdAndActiveIsTrue(id: Long) : Boolean
     fun findByIdAndActiveIsTrue(id: Long) : Identity
-    fun findAllByOrderByIdAsc() : List<Identity>
     fun findAllByOrderByPatientLastAsc(): List<Identity>
     fun findByActiveIsTrueOrderByPatientLastAsc(): List<Identity>
     fun existsByIdAndActiveIsFalse(id: Long) : Boolean
