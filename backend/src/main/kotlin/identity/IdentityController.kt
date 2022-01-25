@@ -49,9 +49,13 @@ class IdentityController(
     }
 
     @PutMapping("/identities/update")
-    fun updateIdentity(@RequestBody identity: Identity): ResponseEntity<Boolean> {
+    fun updateIdentity(@RequestBody identity: Identity): ResponseEntity<Void> {
         val updated = identityService.updateIdentity(identity)
-        return ResponseEntity(updated, HttpStatus.OK)
+        return if(updated) {
+            ResponseEntity.ok().build()
+        } else {
+            ResponseEntity.noContent().build()
+        }
     }
 
     @PutMapping("/identities/refresh")
