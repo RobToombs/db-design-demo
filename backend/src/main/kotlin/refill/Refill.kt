@@ -17,7 +17,7 @@ data class Refill(
     @JoinColumn(name = "identity_history_id")
     var finalIdentity: IdentityHistory? = null,
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL], optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = [], optional = false)
     @JoinColumn(name = "identity_map_id")
     var identityMap: IdentityMap? = null,
 
