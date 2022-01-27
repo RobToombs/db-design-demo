@@ -41,7 +41,7 @@ class IdentityService(
     private val identityHistoryService: IdentityHistoryService
 ) {
     fun getCurrentIdentities(): List<Identity> {
-        return identityRepository.findAllByOrderByPatientLastAsc()
+        return identityRepository.findAllByOrderByIdAsc()
     }
 
     fun getActiveIdentities(): List<Identity> {
@@ -84,6 +84,10 @@ class IdentityService(
                 val now = LocalDateTime.now()
                 retireExistingIdentity(existingIdentity, now, UPI_REFRESH, false)
                 existingIdentity.upi = newUpi
+                existingIdentity.createDate = now
+                existingIdentity.endDate = null
+                existingIdentity.createdBy = UPI_REFRESH
+
                 save(existingIdentity)
             }
         }
@@ -254,6 +258,10 @@ class IdentityService(
 
             retireExistingIdentity(existingIdentity, now, USER, true)
             existingIdentity.active = false
+            existingIdentity.createDate = now
+            existingIdentity.endDate = null
+            existingIdentity.createdBy = USER
+
             save(existingIdentity)
 
             return true
@@ -316,6 +324,10 @@ class IdentityService(
 
         retireExistingIdentity(existingIdentity, now, user, false)
         existingIdentity.active = true
+        existingIdentity.createDate = now
+        existingIdentity.endDate = null
+        existingIdentity.createdBy = user
+
         save(existingIdentity)
 
         return getAffectedIdentityMaps(existingIdentity)
