@@ -18,6 +18,11 @@ class IdentityTable extends StatefulWidget {
 
 class IdentityTableState extends State<IdentityTable> {
   late Future<List<Identity>> _futureIdentities;
+  bool _isHistorical = false;
+  String _buttonText = "Active";
+  String _identityText = "Identity";
+  String _phoneText = "Phone Numbers";
+  String _mrnText = "MRN Overflow";
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +31,9 @@ class IdentityTableState extends State<IdentityTable> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            children: [_resetDB(), _refreshUpiButton(), _processETL()],
+            children: [_resetDB(), _refreshUpiButton(), _processETL(), _showHistory()],
           ),
-          const Padding(padding: EdgeInsets.all(10.0), child: Text("Identity", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+          Padding(padding: const EdgeInsets.all(10.0), child: Text(_identityText, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
           FutureBuilder<List<Identity>>(
               future: _futureIdentities,
               builder: (context, snapshot) {
@@ -74,6 +79,25 @@ class IdentityTableState extends State<IdentityTable> {
           _appointmentETL().then((updated) {
             widget.refreshIdentity();
           });
+        },
+      ),
+    );
+  }
+
+  Padding _showHistory() {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: OutlinedButton(
+        child: Text(
+          _buttonText,
+          style: const TextStyle(fontSize: 16),
+        ),
+        onPressed: () {
+          if (_isHistorical) {
+            updateIdentities();
+          } else {
+            updateHistorical();
+          }
         },
       ),
     );
@@ -147,7 +171,7 @@ class IdentityTableState extends State<IdentityTable> {
 
     return Center(
       child: Column(children: [
-        const Padding(padding: EdgeInsets.all(10.0), child: Text("Phone Numbers", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+        Padding(padding: const EdgeInsets.all(10.0), child: Text(_phoneText, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
         _content
       ]),
     );
@@ -191,7 +215,7 @@ class IdentityTableState extends State<IdentityTable> {
 
     return Center(
       child: Column(children: [
-        const Padding(padding: EdgeInsets.all(10.0), child: Text("MRN Overflow", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
+        Padding(padding: const EdgeInsets.all(10.0), child: Text(_mrnText, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold))),
         _content
       ]),
     );
@@ -264,73 +288,81 @@ class IdentityTableState extends State<IdentityTable> {
   }
 
   TableCell _createEditCell(Identity identity) {
-    return TableCell(
-      child: SizedBox(
-        height: 24,
-        child: Center(
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              child: identity.active
-                  ? const Icon(
-                      Icons.edit,
-                      color: Colors.blue,
-                      size: 22.0,
-                    )
-                  : const Text(""),
-              onTap: identity.active
-                  ? () {
-                      _showEditModal(context, identity);
-                    }
-                  : null,
+    if (_isHistorical) {
+      return const TableCell(child: SizedBox(height: 24, child: Center()));
+    } else {
+      return TableCell(
+        child: SizedBox(
+          height: 24,
+          child: Center(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                child: identity.active
+                    ? const Icon(
+                        Icons.edit,
+                        color: Colors.blue,
+                        size: 22.0,
+                      )
+                    : const Text(""),
+                onTap: identity.active
+                    ? () {
+                        _showEditModal(context, identity);
+                      }
+                    : null,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   TableCell _createActivateCell(Identity identity) {
-    Widget _icon = const Text("");
-    if (identity.active) {
-      _icon = const Icon(Icons.cancel, color: Colors.red, size: 22.0);
-    } else if (!identity.active) {
-      _icon = const Icon(Icons.check_circle, color: Colors.green, size: 22.0);
-    }
+    if (_isHistorical) {
+      return const TableCell(child: SizedBox(height: 24, child: Center()));
+    } else {
+      Widget _icon = const Text("");
+      if (identity.active) {
+        _icon = const Icon(Icons.cancel, color: Colors.red, size: 22.0);
+      } else if (!identity.active) {
+        _icon = const Icon(Icons.check_circle, color: Colors.green, size: 22.0);
+      }
 
-    GestureTapCallback? _callback;
-    if (identity.active) {
-      _callback = () {
-        _deactivateIdentity(identity).then((success) {
-          if (success) {
-            widget.refreshIdentity();
-          }
-        });
-      };
-    } else if (!identity.active) {
-      _callback = () {
-        _activateIdentity(identity).then((success) {
-          if (success) {
-            widget.refreshIdentity();
-          }
-        });
-      };
-    }
+      GestureTapCallback? _callback;
+      if (identity.active) {
+        _callback = () {
+          _deactivateIdentity(identity).then((success) {
+            if (success) {
+              widget.refreshIdentity();
+            }
+          });
+        };
+      } else if (!identity.active) {
+        _callback = () {
+          _activateIdentity(identity).then((success) {
+            if (success) {
+              widget.refreshIdentity();
+            }
+          });
+        };
+      }
 
-    return TableCell(
-      child: SizedBox(
-        height: 24,
-        child: Center(
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              child: _icon,
-              onTap: _callback,
+      return TableCell(
+        child: SizedBox(
+          height: 24,
+          child: Center(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                child: _icon,
+                onTap: _callback,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   _showEditModal(context, Identity identity) {
@@ -493,6 +525,22 @@ class IdentityTableState extends State<IdentityTable> {
   void updateIdentities() {
     setState(() {
       _futureIdentities = _fetchIdentities();
+      _isHistorical = false;
+      _buttonText = "Historical";
+      _identityText = "Identity";
+      _phoneText = "Phone Numbers";
+      _mrnText = "MRN Overflow";
+    });
+  }
+
+  void updateHistorical() {
+    setState(() {
+      _futureIdentities = _fetchHistorical();
+      _isHistorical = true;
+      _buttonText = "Active";
+      _identityText = "Identity History";
+      _phoneText = "Phone Numbers History";
+      _mrnText = "MRN Overflow History";
     });
   }
 
@@ -517,6 +565,16 @@ class IdentityTableState extends State<IdentityTable> {
       return true;
     } else {
       throw Exception('Failed to activate identity');
+    }
+  }
+
+  Future<List<Identity>> _fetchHistorical() async {
+    http.Response response = await http.get(Uri.http('localhost:8080', 'api/identities/historical'));
+
+    if (response.statusCode == HttpStatus.ok) {
+      return (jsonDecode(response.body) as List).map((identity) => Identity.fromJson(identity)).toList();
+    } else {
+      throw Exception('Failed to load historical identities');
     }
   }
 

@@ -3,7 +3,9 @@ package com.toombs.backend.identity
 import com.toombs.backend.identity.entities.active.Identity
 import com.toombs.backend.identity.entities.active.IdentityMap
 import com.toombs.backend.identity.entities.audit.Audit
+import com.toombs.backend.identity.entities.history.IdentityHistory
 import com.toombs.backend.identity.entities.history.IdentityMapHistory
+import com.toombs.backend.identity.services.IdentityHistoryService
 import com.toombs.backend.identity.services.IdentityService
 import com.toombs.backend.identity.services.USER
 import org.springframework.http.HttpStatus
@@ -17,6 +19,7 @@ import java.net.URI
 @RequestMapping("/api")
 class IdentityController(
     private val identityService: IdentityService,
+    private val identityHistoryService: IdentityHistoryService,
 ) {
     @GetMapping("/identities/current")
     fun currentIdentities(): ResponseEntity<List<Identity>> {
@@ -40,6 +43,12 @@ class IdentityController(
     fun deactivateIdentity(@PathVariable id: Long): ResponseEntity<Boolean> {
         val deactivated = identityService.deactivateIdentity(id)
         return ResponseEntity(deactivated, HttpStatus.OK)
+    }
+
+    @GetMapping("/identities/historical")
+    fun historicalIdentities(): ResponseEntity<List<IdentityHistory>> {
+        val identities = identityHistoryService.getHistoricalIdentities()
+        return ResponseEntity(identities, HttpStatus.OK)
     }
 
     @GetMapping("/identities/active")

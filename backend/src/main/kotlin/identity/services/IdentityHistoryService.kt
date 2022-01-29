@@ -14,6 +14,10 @@ class IdentityHistoryService(
     private val identityHistoryRepository: IdentityHistoryRepository,
 ) {
 
+    fun getHistoricalIdentities(): List<IdentityHistory> {
+        return identityHistoryRepository.findAllByOrderByIdAsc()
+    }
+
     fun retireIdentity(identity: Identity, time: LocalDateTime, user: String): IdentityHistory {
         val history = createHistoryEntry(identity, time, user)
         return save(history)

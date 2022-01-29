@@ -21,8 +21,8 @@ class IdentityContent extends StatelessWidget {
     Center tables = Center(
       child: Column(
         children: [
-          IdentityTable(key: _identityTable, refreshIdentity: _refresh),
-          IdentityMapTable(key: _identityMapTable, refreshIdentity: _refresh),
+          IdentityTable(key: _identityTable, refreshIdentity: _active),
+          IdentityMapTable(key: _identityMapTable, refreshIdentity: _active),
           IdentityMapHistoryTable(key: _identityMapHistoryTable),
         ],
       ),
@@ -50,15 +50,17 @@ class IdentityContent extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), child: AddIdentificationDialogContent(refreshIdentities: _refresh));
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)), child: AddIdentificationDialogContent(refreshIdentities: _active));
         });
   }
 
-  void _refresh() {
+  void _active() {
     _identityTable.currentState?.updateIdentities();
     _identityMapTable.currentState?.updateIdentityMaps();
     _identityMapHistoryTable.currentState?.updateIdentityMapHistories();
   }
+
+  void _historical() {}
 }
 
 class AddIdentificationDialogContent extends StatefulWidget {

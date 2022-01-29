@@ -6,6 +6,7 @@ import com.toombs.backend.identity.entities.active.IdentityMap
 import com.toombs.backend.identity.entities.active.MrnOverflow
 import com.toombs.backend.identity.entities.active.Phone
 import com.toombs.backend.identity.entities.audit.Audit
+import com.toombs.backend.identity.entities.history.IdentityHistory
 import com.toombs.backend.identity.entities.history.IdentityMapHistory
 import com.toombs.backend.identity.repositories.history.IdentityMapHistoryRepository
 import com.toombs.backend.identity.repositories.active.IdentityMapRepository
