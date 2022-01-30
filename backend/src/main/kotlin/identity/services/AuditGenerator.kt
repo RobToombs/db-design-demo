@@ -5,6 +5,7 @@ import com.toombs.backend.identity.entities.audit.Delta
 import com.toombs.backend.identity.entities.audit.DeltaEvent
 import com.toombs.backend.identity.entities.active.Identity
 import com.toombs.backend.identity.entities.base.BaseIdentity
+import com.toombs.backend.identity.entities.base.BasePhone
 import com.toombs.backend.identity.entities.history.IdentityHistory
 import java.util.*
 
@@ -15,6 +16,7 @@ const val FIRST: String  = "First"
 const val DOB: String  = "DOB"
 const val GENDER: String  = "Gender"
 const val PHONE: String  = "Phone"
+const val PHONE_TYPE: String  = "Phone Type"
 const val UPI: String  = "Upi"
 
 class AuditGenerator {
@@ -67,18 +69,18 @@ class AuditGenerator {
     private fun creationDelta(identity: BaseIdentity): List<Delta> {
         val result = mutableListOf<Delta>()
 
-        result.add(Delta(PRIMARY_MRN, "", identity.mrn))
-        result.add(Delta(LAST, "", identity.patientLast))
-        result.add(Delta(FIRST, "", identity.patientFirst))
-        result.add(Delta(DOB, "", identity.dateOfBirth.toString()))
-        result.add(Delta(GENDER, "", identity.gender))
+        createDelta(identity.mrn, PRIMARY_MRN, result)
+        createDelta(identity.patientLast, LAST, result)
+        createDelta(identity.patientFirst, FIRST, result)
+        createDelta(identity.dateOfBirth.toString(), DOB, result)
+        createDelta(identity.gender, GENDER, result)
 
         for(phone in identity.phones()) {
-            result.add(Delta(PHONE, "", phone.number))
+            createDelta(phone.number, PHONE, result)
         }
 
         for(mrn in identity.mrnOverflow()) {
-            result.add(Delta(SECONDARY_MRN, "", mrn.mrn))
+            createDelta(mrn.mrn, SECONDARY_MRN, result)
         }
 
         return result
@@ -94,11 +96,7 @@ class AuditGenerator {
         addDeltaIfUpdated(old.gender, new.gender, GENDER, deltas)
         addDeltaIfUpdated(old.upi, new.upi, UPI, deltas)
 
-        for(i in 0 until old.phones().size) {
-            val oldPhone = old.phones()[i].number
-            val newPhone = new.phones()[i].number
-            addDeltaIfUpdated(oldPhone, newPhone, PHONE, deltas)
-        }
+        comparePhones(old.phones(), new.phones(), deltas)
 
         val deltaEvent = determineEvent(old, new, deltas)
 
@@ -108,6 +106,34 @@ class AuditGenerator {
             event = deltaEvent,
             deltas = deltas
         )
+    }
+
+    private fun comparePhones(old: List<BasePhone>, new: List<BasePhone>, deltas: MutableList<Delta>) {
+        for(i in old.indices) {
+            val oldPhone = old[i]
+            val newPhone = new.firstOrNull { phone -> phone.number == oldPhone.number }
+
+            // if new phone == null, then oldPhone was deleted
+            if(newPhone == null) {
+                deleteDelta(oldPhone.number , PHONE, deltas)
+            }
+
+            // if new phone != null, the number is the same so compare additional attributes
+            if(newPhone != null) {
+                addDeltaIfUpdated(oldPhone.number + " - " + oldPhone.type, newPhone.number + " - " + newPhone.type, PHONE_TYPE, deltas)
+            }
+        }
+
+        val added = new.filter { phone -> old.map { oldPhone -> oldPhone.number }.contains(phone.number).not() }
+        added.forEach { phone -> createDelta(phone.number, PHONE, deltas) }
+    }
+
+    private fun deleteDelta(deleted: String, field: String, deltas: MutableList<Delta>) {
+        deltas.add(Delta(field, deleted, "", DeltaEvent.DELETE))
+    }
+
+    private fun createDelta(added: String, field: String, deltas: MutableList<Delta>) {
+        deltas.add(Delta(field, "", added, DeltaEvent.CREATE))
     }
 
     private fun determineEvent(old: BaseIdentity, new: BaseIdentity, deltas: MutableList<Delta>): DeltaEvent {
@@ -122,7 +148,7 @@ class AuditGenerator {
 
     private fun addDeltaIfUpdated(old: Any?, new: Any?, field: String, deltas: MutableList<Delta>) {
         if(!Objects.equals(old, new)) {
-            deltas.add(Delta(field, old.toString(), new.toString()))
+            deltas.add(Delta(field, old.toString(), new.toString(), DeltaEvent.UPDATE))
         }
     }
 

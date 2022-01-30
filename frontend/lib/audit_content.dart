@@ -271,9 +271,31 @@ class _ChangeLog extends StatelessWidget {
                 child: Row(children: [
                   Text(
                     deltas[index - 1].field,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xff66c97f)),
                   ),
                   Text(" - " + deltas[index - 1].current),
+                ]),
+              );
+            } else if (deltas[index - 1].event == 'CREATE') {
+              return Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Row(children: [
+                  Text(
+                    deltas[index - 1].field,
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xff66c97f)),
+                  ),
+                  Text("      Added:  " + deltas[index - 1].current),
+                ]),
+              );
+            } else if (deltas[index - 1].event == 'DELETE') {
+              return Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Row(children: [
+                  Text(
+                    deltas[index - 1].field,
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xffff678a)),
+                  ),
+                  Text("      Deleted:  " + deltas[index - 1].old),
                 ]),
               );
             } else {
@@ -282,7 +304,7 @@ class _ChangeLog extends StatelessWidget {
                 child: Row(children: [
                   Text(
                     deltas[index - 1].field,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xff565cfd)),
                   ),
                   Text("      Old:  " + deltas[index - 1].old),
                   Text("      New:  " + deltas[index - 1].current),

@@ -59,8 +59,6 @@ class IdentityContent extends StatelessWidget {
     _identityMapTable.currentState?.updateIdentityMaps();
     _identityMapHistoryTable.currentState?.updateIdentityMapHistories();
   }
-
-  void _historical() {}
 }
 
 class AddIdentificationDialogContent extends StatefulWidget {

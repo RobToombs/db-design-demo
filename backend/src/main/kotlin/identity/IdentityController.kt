@@ -7,7 +7,7 @@ import com.toombs.backend.identity.entities.history.IdentityHistory
 import com.toombs.backend.identity.entities.history.IdentityMapHistory
 import com.toombs.backend.identity.services.IdentityHistoryService
 import com.toombs.backend.identity.services.IdentityService
-import com.toombs.backend.identity.services.USER
+import com.toombs.backend.identity.services.randomUser
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -75,7 +75,8 @@ class IdentityController(
 
     @PostMapping("/identities/add")
     fun addIdentity(@RequestBody identity: Identity): ResponseEntity<Identity> {
-        val result = identityService.addIdentity(identity, USER)
+        val user = randomUser()
+        val result = identityService.addIdentity(identity, user)
 
         val location: URI = ServletUriComponentsBuilder
             .fromCurrentRequest()

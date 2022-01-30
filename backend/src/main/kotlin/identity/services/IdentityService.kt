@@ -6,7 +6,6 @@ import com.toombs.backend.identity.entities.active.IdentityMap
 import com.toombs.backend.identity.entities.active.MrnOverflow
 import com.toombs.backend.identity.entities.active.Phone
 import com.toombs.backend.identity.entities.audit.Audit
-import com.toombs.backend.identity.entities.history.IdentityHistory
 import com.toombs.backend.identity.entities.history.IdentityMapHistory
 import com.toombs.backend.identity.repositories.history.IdentityMapHistoryRepository
 import com.toombs.backend.identity.repositories.active.IdentityMapRepository
@@ -19,19 +18,28 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.transaction.Transactional
+import kotlin.random.Random.Default.nextInt
 
-const val USER = "rtoombs@shieldsrx.com"
 const val TRX_ID_COLUMN = "TrxId"
 const val UPI_COLUMN = "Upi"
 
 const val TRX_ID = "TRX-"
 const val UPI_REFRESH = "UPI REFRESH"
 const val MERGE = "MERGE"
-const val UPDATE = "UPDATE"
 const val CREATE = "CREATE"
 
 val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 val AUDIT_GENERATOR = AuditGenerator()
+
+fun randomUser() : String {
+    return when (nextInt(5)) {
+        1 -> "rtoombs@shieldsrx.com"
+        2 -> "dani@shieldsrx.com"
+        3 -> "stella@shieldsrx.com"
+        4 -> "sascha@shieldsrx.com"
+        else -> "mpants@shieldsrx.com"
+    }
+}
 
 @Service
 class IdentityService(
@@ -111,8 +119,9 @@ class IdentityService(
             || anyPhoneNumbersUpdated(existingIdentity, updatedIdentity)
         ) {
             val now = LocalDateTime.now()
-            retireExistingIdentity(existingIdentity, now, USER, false)
-            updateIdentity(existingIdentity, updatedIdentity, USER, now)
+            val user = randomUser();
+            retireExistingIdentity(existingIdentity, now, user, false)
+            updateIdentity(existingIdentity, updatedIdentity, user, now)
             save(existingIdentity)
 
             return true
@@ -121,16 +130,24 @@ class IdentityService(
         return false
     }
 
-    // TODO If logic is added to add/delete phone numbers, this method would need to be updated
     private fun anyPhoneNumbersUpdated(existingIdentity: Identity, updatedIdentity: Identity): Boolean {
-        for (i in 0..existingIdentity.phones.size) {
+        for (i in 0 until existingIdentity.phones.size) {
             val existing = existingIdentity.phones[i]
-            val updated = updatedIdentity.phones[i]
+            val updated = updatedIdentity.phones.firstOrNull { updatedPhone -> updatedPhone.id == existing.id }
+
+            if(updated != null && updated.delete) {
+                return true
+            }
 
             if(existing != updated) {
                 return true
             }
         }
+
+        if(updatedIdentity.phones.size != existingIdentity.phones.size) {
+            return true
+        }
+
         return false
     }
 
@@ -153,9 +170,10 @@ class IdentityService(
         val existingIdentity = identityMap.identity!!
 
         val now = LocalDateTime.now()
+        val user = randomUser()
 
         // Retire the existing identity + create a new history of the merge
-        retireExistingIdentity(existingIdentity, now, USER, false)
+        retireExistingIdentity(existingIdentity, now, user, false)
         createIdentityMapHistoryEntry(identityMap.id, existingIdentity.id, destinationIdentity.id, now, MERGE)
 
         // Create the new "inactive" identity
@@ -206,8 +224,9 @@ class IdentityService(
             if (id == null) {
                 val upi = generateUPI(identity)
                 val trx = generateTrxId()
+                val user = randomUser()
 
-                val newIdentity = createNewIdentity(identity, upi, trx, USER)
+                val newIdentity = createNewIdentity(identity, upi, trx, user)
                 result = save(newIdentity)
             }
             else if(identityRepository.existsByIdAndActiveIsTrue(id)) {
@@ -241,8 +260,9 @@ class IdentityService(
     fun reactivateIdentityFromApp(id: Long): Boolean {
         val exists = identityRepository.existsByIdAndActiveIsFalse(id)
         if(exists) {
+            val user = randomUser()
             val existingIdentity = identityRepository.findByIdAndActiveIsFalseAndEndDateIsNull(id)
-            reactiveIdentity(existingIdentity, USER)
+            reactiveIdentity(existingIdentity, user)
 
             return true
         }
@@ -256,12 +276,13 @@ class IdentityService(
             val existingIdentity = identityRepository.findByIdAndActiveIsTrue(id)
 
             val now = LocalDateTime.now()
+            val user = randomUser()
 
-            retireExistingIdentity(existingIdentity, now, USER, true)
+            retireExistingIdentity(existingIdentity, now, user, true)
             existingIdentity.active = false
             existingIdentity.createDate = now
             existingIdentity.endDate = null
-            existingIdentity.createdBy = USER
+            existingIdentity.createdBy = user
 
             save(existingIdentity)
 
@@ -414,7 +435,7 @@ class IdentityService(
         for(newPhone in updated.phones.filter { it.id == null }) {
             val phone = Phone()
 
-            phone.type = newPhone.type
+            phone.type = "MOBILE"
             phone.number = newPhone.number
 
             existing.addPhone(phone)

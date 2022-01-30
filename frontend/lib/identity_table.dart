@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:tuple/tuple.dart';
 
 import 'helpers.dart';
 import 'models.dart';
@@ -307,7 +308,13 @@ class IdentityTableState extends State<IdentityTable> {
                     : const Text(""),
                 onTap: identity.active
                     ? () {
-                        _showEditModal(context, identity);
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                                  child: EditIdentityDialogContent(identity: identity, refresh: widget.refreshIdentity));
+                            });
                       }
                     : null,
               ),
@@ -363,157 +370,6 @@ class IdentityTableState extends State<IdentityTable> {
         ),
       );
     }
-  }
-
-  _showEditModal(context, Identity identity) {
-    String _updatedMrn = identity.mrn;
-    String _updatedLast = identity.patientLast;
-    String _updatedFirst = identity.patientFirst;
-    DateTime _updatedDob = identity.dateOfBirth;
-    String _updatedGender = identity.gender;
-    List<String> _updatedNumbers = identity.phones.map((phone) => phone.number).toList();
-
-    List<TextFormField> _phoneNumbers = identity.phones
-        .asMap()
-        .entries
-        .map((entry) => {
-              TextFormField(
-                decoration: InputDecoration(
-                  filled: false,
-                  labelText: 'Phone Number :' + entry.value.number,
-                ),
-                initialValue: entry.value.number,
-                onChanged: (value) {
-                  setState(() {
-                    _updatedNumbers[entry.key] = value;
-                  });
-                },
-              )
-            })
-        .expand((phoneNumberField) => phoneNumberField)
-        .toList();
-
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              constraints: const BoxConstraints(minHeight: 500, minWidth: 600, maxHeight: 500, maxWidth: 600),
-              child: Column(
-                children: [
-                  const Text(
-                    "Edit Identity",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      filled: false,
-                      labelText: 'MRN:' + identity.mrn,
-                    ),
-                    initialValue: identity.mrn,
-                    onChanged: (value) {
-                      setState(() {
-                        _updatedMrn = value;
-                      });
-                    },
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      filled: false,
-                      labelText: 'Last Name:' + identity.patientLast,
-                    ),
-                    initialValue: identity.patientLast,
-                    onChanged: (value) {
-                      setState(() {
-                        _updatedLast = value;
-                      });
-                    },
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      filled: false,
-                      labelText: 'First Name:' + identity.patientFirst,
-                    ),
-                    initialValue: identity.patientFirst,
-                    onChanged: (value) {
-                      setState(() {
-                        _updatedFirst = value;
-                      });
-                    },
-                  ),
-                  InputDatePickerFormField(
-                    fieldLabelText: 'DOB:' + DateFormat('dd/MM/yyyy').format(identity.dateOfBirth),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                    initialDate: identity.dateOfBirth,
-                    onDateSubmitted: (value) {
-                      setState(() {
-                        _updatedDob = value;
-                      });
-                    },
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      filled: false,
-                      labelText: 'Gender:' + identity.gender,
-                    ),
-                    initialValue: identity.gender,
-                    onChanged: (value) {
-                      setState(() {
-                        _updatedGender = value;
-                      });
-                    },
-                  ),
-                  SingleChildScrollView(
-                      child: Column(
-                    children: _phoneNumbers,
-                  )),
-                  Container(
-                      margin: const EdgeInsets.only(top: 40.0),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                        TextButton(
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0),
-                          child: ElevatedButton(
-                            child: const Text(
-                              'Save',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            onPressed: () {
-                              identity.mrn = _updatedMrn;
-                              identity.patientFirst = _updatedFirst;
-                              identity.patientLast = _updatedLast;
-                              identity.gender = _updatedGender;
-                              identity.dateOfBirth = _updatedDob;
-
-                              for (var i = 0; i < identity.phones.length; i++) {
-                                identity.phones[i].number = _updatedNumbers[i];
-                              }
-
-                              _updateIdentity(identity).then((updated) {
-                                Navigator.pop(context);
-                                widget.refreshIdentity();
-                              });
-                            },
-                          ),
-                        ),
-                      ])),
-                ],
-              ),
-            ),
-          );
-        });
   }
 
   @override
@@ -588,22 +444,6 @@ class IdentityTableState extends State<IdentityTable> {
     }
   }
 
-  Future<bool> _updateIdentity(Identity identity) async {
-    http.Response response = await http.put(
-      Uri.http('localhost:8080', 'api/identities/update'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(identity.toJson()),
-    );
-
-    if (response.statusCode == HttpStatus.ok) {
-      return true;
-    } else {
-      throw Exception('Failed to update identity');
-    }
-  }
-
   Future<bool> _appointmentETL() async {
     http.Response response = await http.put(
       Uri.http('localhost:8080', 'api/etl'),
@@ -646,6 +486,270 @@ class IdentityTableState extends State<IdentityTable> {
       return true;
     } else {
       throw Exception('Failed to refresh upis');
+    }
+  }
+}
+
+class EditIdentityDialogContent extends StatefulWidget {
+  final VoidCallback refresh;
+  final Identity identity;
+
+  const EditIdentityDialogContent({Key? key, required this.identity, required this.refresh}) : super(key: key);
+
+  @override
+  _EditIdentityDialogContentState createState() => _EditIdentityDialogContentState();
+}
+
+class _EditIdentityDialogContentState extends State<EditIdentityDialogContent> {
+  late String _updatedMrn;
+  late String _updatedLast;
+  late String _updatedFirst;
+  late DateTime _updatedDob;
+  late String _updatedGender;
+  late List<Tuple2<String, bool>> _updatedNumbers;
+  Tuple2<String, bool>? _newNumber;
+
+  @override
+  void initState() {
+    super.initState();
+    _updatedMrn = widget.identity.mrn;
+    _updatedLast = widget.identity.patientLast;
+    _updatedFirst = widget.identity.patientFirst;
+    _updatedDob = widget.identity.dateOfBirth;
+    _updatedGender = widget.identity.gender;
+    _updatedNumbers = widget.identity.phones.map((phone) => Tuple2(phone.number, phone.delete)).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget _addPhone = TextButton(
+      onPressed: () {
+        setState(() {
+          _newNumber = const Tuple2("", false);
+        });
+      },
+      child: const Text('Add Phone Number'),
+    );
+
+    List<Widget> _phoneNumbers = widget.identity.phones
+        .asMap()
+        .entries
+        .map((entry) => {
+              TextFormField(
+                style: TextStyle(color: getColor(_updatedNumbers[entry.key].item2)),
+                decoration: InputDecoration(
+                  filled: false,
+                  labelText: 'Phone Number :' + entry.value.number,
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _updatedNumbers[entry.key] = _updatedNumbers[entry.key].withItem2(!_updatedNumbers[entry.key].item2);
+                      });
+                    },
+                    icon: getIcon(_updatedNumbers[entry.key].item2),
+                  ),
+                ),
+                initialValue: entry.value.number,
+                onChanged: (value) {
+                  setState(() {
+                    _updatedNumbers[entry.key] = _updatedNumbers[entry.key].withItem1(value);
+                  });
+                },
+              )
+            })
+        .expand((phoneNumberField) => phoneNumberField)
+        .toList();
+
+    if (_newNumber != null) {
+      Widget _newPhoneNumber = TextFormField(
+        style: TextStyle(color: getColor(_newNumber!.item2)),
+        decoration: InputDecoration(
+          filled: false,
+          labelText: 'New Phone Number :',
+          suffixIcon: IconButton(
+            onPressed: () {
+              setState(() {
+                _newNumber = _newNumber!.withItem2(!_newNumber!.item2);
+              });
+            },
+            icon: getIcon(_newNumber!.item2),
+          ),
+        ),
+        initialValue: "",
+        onChanged: (value) {
+          setState(() {
+            _newNumber = _newNumber!.withItem1(value);
+          });
+        },
+      );
+
+      _phoneNumbers.add(_newPhoneNumber);
+    }
+
+    Column _phoneContent;
+    if (_newNumber == null) {
+      _phoneContent = Column(children: [Column(children: _phoneNumbers), _addPhone]);
+    } else {
+      _phoneContent = Column(children: _phoneNumbers);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      constraints: const BoxConstraints(minHeight: 550, minWidth: 600, maxHeight: 550, maxWidth: 600),
+      child: Column(
+        children: [
+          const Text(
+            "Edit Identity",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          TextFormField(
+            decoration: InputDecoration(
+              filled: false,
+              labelText: 'MRN:' + widget.identity.mrn,
+            ),
+            initialValue: widget.identity.mrn,
+            onChanged: (value) {
+              setState(() {
+                _updatedMrn = value;
+              });
+            },
+          ),
+          TextFormField(
+            decoration: InputDecoration(
+              filled: false,
+              labelText: 'Last Name:' + widget.identity.patientLast,
+            ),
+            initialValue: widget.identity.patientLast,
+            onChanged: (value) {
+              setState(() {
+                _updatedLast = value;
+              });
+            },
+          ),
+          TextFormField(
+            decoration: InputDecoration(
+              filled: false,
+              labelText: 'First Name:' + widget.identity.patientFirst,
+            ),
+            initialValue: widget.identity.patientFirst,
+            onChanged: (value) {
+              setState(() {
+                _updatedFirst = value;
+              });
+            },
+          ),
+          InputDatePickerFormField(
+            fieldLabelText: 'DOB:' + DateFormat('dd/MM/yyyy').format(widget.identity.dateOfBirth),
+            firstDate: DateTime(1900),
+            lastDate: DateTime.now(),
+            initialDate: widget.identity.dateOfBirth,
+            onDateSubmitted: (value) {
+              setState(() {
+                _updatedDob = value;
+              });
+            },
+          ),
+          TextFormField(
+            decoration: InputDecoration(
+              filled: false,
+              labelText: 'Gender:' + widget.identity.gender,
+            ),
+            initialValue: widget.identity.gender,
+            onChanged: (value) {
+              setState(() {
+                _updatedGender = value;
+              });
+            },
+          ),
+          SingleChildScrollView(
+            child: _phoneContent,
+          ),
+          Container(
+              margin: const EdgeInsets.only(top: 40.0),
+              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                TextButton(
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: ElevatedButton(
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    onPressed: () {
+                      widget.identity.mrn = _updatedMrn;
+                      widget.identity.patientFirst = _updatedFirst;
+                      widget.identity.patientLast = _updatedLast;
+                      widget.identity.gender = _updatedGender;
+                      widget.identity.dateOfBirth = _updatedDob;
+
+                      for (var i = 0; i < widget.identity.phones.length; i++) {
+                        widget.identity.phones[i].number = _updatedNumbers[i].item1;
+                        widget.identity.phones[i].delete = _updatedNumbers[i].item2;
+                      }
+
+                      if (_newNumber != null) {
+                        Phone newPhone = Phone(id: null, identityId: null, number: _newNumber!.item1, type: "");
+                        newPhone.delete = _newNumber!.item2;
+
+                        widget.identity.phones.add(newPhone);
+                      }
+
+                      _updateIdentity(widget.identity).then((updated) {
+                        Navigator.pop(context);
+                        widget.refresh();
+                      });
+                    },
+                  ),
+                ),
+              ])),
+        ],
+      ),
+    );
+  }
+
+  Icon getIcon(bool delete) {
+    if (delete) {
+      return const Icon(
+        Icons.delete,
+        color: Colors.redAccent,
+      );
+    } else {
+      return const Icon(
+        Icons.delete,
+      );
+    }
+  }
+
+  Color? getColor(bool delete) {
+    if (delete) {
+      return Colors.redAccent;
+    } else {
+      return null;
+    }
+  }
+
+  Future<bool> _updateIdentity(Identity identity) async {
+    http.Response response = await http.put(
+      Uri.http('localhost:8080', 'api/identities/update'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(identity.toJson()),
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      return true;
+    } else {
+      throw Exception('Failed to update identity');
     }
   }
 }

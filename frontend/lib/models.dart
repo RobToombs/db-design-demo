@@ -86,6 +86,7 @@ class Phone {
   int? identityId;
   String number;
   String type;
+  bool delete = false;
 
   Phone({
     required this.id,
@@ -107,6 +108,7 @@ class Phone {
         'id': id,
         'number': number.toString(),
         'type': type.toString(),
+        'delete': delete.toString(),
       };
 }
 
@@ -292,11 +294,13 @@ class Delta {
   String field;
   String old;
   String current;
+  String event;
 
   Delta({
     required this.field,
     required this.old,
     required this.current,
+    required this.event,
   });
 
   factory Delta.fromJson(Map<String, dynamic> json) {
@@ -304,6 +308,7 @@ class Delta {
       field: json['field'],
       old: json['old'],
       current: json['new'],
+      event: json['event'],
     );
   }
 }
